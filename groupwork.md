@@ -9,6 +9,19 @@
     inodestack 空余索引栈
     blockstack 空余数据块栈
     
+    
+# 文件
+## 名称
+    Filesys.vfs
+## 大小
+    16520KB
+## 分布
+    inode bitmap 1-4KB
+    block bitmap 5-8KB
+    inode_0~4095 9-136KB
+    block_0~4095 137-16520KB
+    
+
 # 函数
 ## 基础
     pwd
