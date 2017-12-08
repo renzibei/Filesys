@@ -33,8 +33,13 @@
     cat
     rm
 ## 成员函数
+    InitDisk 初始化磁盘，判断是否首次运行
     ClearDisk 格式化磁盘
     FindFile 寻找文件并判断
+    ShowPath 显示当前路径
+    PathError 报错文件或目录不存在
+    DirError 报错不是目录
+    FileError 报错不是文件
 ## 增加
     touch <file> //新建文件
     add <file> //向文件尾添加
