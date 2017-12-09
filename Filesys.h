@@ -10,6 +10,10 @@
 #define Filesys_h
 #include "qu.h"
 #include "fu.h"
-
+#include "filestruct.h"
+#include <iostream>
+#include <cstdio>
+#include <cstring>
+using namespace std;
 
 #endif /* Filesys_h */
