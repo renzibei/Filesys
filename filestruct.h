@@ -1,6 +1,8 @@
 #ifndef FILESTRUCT_H
 #define FILESTRUCT_H
 
+const char filename[12] = "Filesys.vfs";
+
 struct _super_block {
     bool inode_bitmap[4096];
     bool block_bitmap[4096];
