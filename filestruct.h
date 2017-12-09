@@ -26,8 +26,13 @@ struct dir_entry {
     int inode_id;
 };
 
-struct dir_block {
+struct _dir_block {
     dir_entry dirs[16];
 };
+
+struct _data_block {
+    _file_block *file_block;
+    _dir_block *dir_block;
+} data_blocks[4096];
 
 #endif
