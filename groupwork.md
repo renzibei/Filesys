@@ -5,6 +5,7 @@
     file_block
     dir_entry
     dir_block
+	%详情见filestruct.h
 ## 增加
     inodestack 空余索引栈
     blockstack 空余数据块栈
