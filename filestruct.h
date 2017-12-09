@@ -4,7 +4,7 @@
 struct _super_block {
     bool inode_bitmap[4096];
     bool block_bitmap[4096];
-} super_blocks;
+} sbks;
 
 struct _inode {
     int i_id;
@@ -33,6 +33,6 @@ struct _dir_block {
 struct _data_block {
     _file_block *file_block;
     _dir_block *dir_block;
-} data_blocks[4096];
+} dbs[4096];
 
 #endif
