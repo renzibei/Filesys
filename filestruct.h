@@ -33,6 +33,6 @@ struct _dir_block {
 struct _data_block {
     _file_block *file_block;
     _dir_block *dir_block;
-} dbs[4096];
+} dbks[4096];
 
 #endif
