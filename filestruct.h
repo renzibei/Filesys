@@ -13,7 +13,7 @@ struct _inode {
     //...
     int i_blocks[1];
     char i_place_holder[16]; //占位符
-} inodes;
+} inodes[4096];
 
 //文件对应数据块
 struct _file_block {
