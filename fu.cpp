@@ -9,40 +9,81 @@ int UpdateInode(int x);//更新第x个inode信息
 int UpdateBlkBmp(int x);//更新第x个超级块block信息 
 int FindSonPath(char sonpath[],int inode_id); 
 int FindPath(char path[], int inode_id);//返回path[]的inode_id路径或-1 
-void WriteDir(const char *dir_name, int dir_id, int inode_id);//在inode_id文件夹中的第dir_id个位置建立文件夹联系dir_name 
+void WriteDir(const char *dir_name, int dir_id, int inode_id);//在inode_id文件夹中的第dir_id个位置建立文件夹联系dir_name
+int UpdateIndBmp(int x);
+int UpdateBlkBmp(int x);
+int UpdateInode(int x); 
 //注意，WriteDir函数中写入dir_name没有把后面补全'\0' 
 //建立的文件夹联系不代表存在这样一个文件夹，此函数十分危险
 //此函数好像有问题，DirsPos(252)是不对的 
 //以上来自qu.cpp 
-_dir_block get_dirblock(block_id)//创建dirblock 
+
+//_super_block sbks;
+//_inode inodes[4096];
+
+_dir_block get_dirblock(int inode_id)//创建dirblock，警告，每次使用dirblock之前都需要判断是否为文件夹 
 {
-	
+    FILE *vfs = fopen(filename, "rb+");
+    _dir_block block;
+    int block_id = inodes[inode_id].i_blocks[0];
+    int Position = DataBlkPos(block_id);
+    for (int i = 0; i < 16; i++){
+    	fseek(vfs, Position + i * dir_size, SEEK_SET);
+    	fread(block.dirs[i].name,sizeof(block.dirs[i].name), 1, vfs);
+    	fseek(vfs, 252, SEEK_CUR);
+    	fread(&block.dirs[i].inode_id,sizeof(block.dirs[i].inode_id), 1, vfs);
+    }
+    fclose(vfs);
+    return block;
+}
+void get_fileblock(int inode_id, char* fileblock)//创建fileblock，警告，每次使用fileblock之前都需要判断是否为文件 
+{
+    FILE *vfs = fopen(filename, "rb+");
+    int block_id = inodes[inode_id].i_blocks[0];
+    int Position = DataBlkPos(block_id);
+    fseek(vfs, Position, SEEK_SET);
+    fread(fileblock ,sizeof(fileblock), 1, vfs);
+    fclose(vfs);
+    return;
+}
+void write_fileblock_into_file(char str[],int block_id)//在block_id上书写str，警告，每次使用前需保证是文件 
+{
+    FILE *vfs = fopen(filename, "rb+");
+    int Position = DataBlkPos(block_id);
+    fseek(vfs, Position, SEEK_SET);
+    fwrite(str ,sizeof(str), 1, vfs);
+    fwrite('\0' ,sizeof(char), datablk_size-sizeof(str), vfs);
+    fclose(vfs);
+    return;
 }
 int find_free_indbmp(){
 	int i = 0;
-	for (; (i < indbmp_size) && (skbs.inode_bitmap[i] != 0); i++);
+	for (; (i < indbmp_size) && (sbks.inode_bitmap[i] != 0); i++);
 	if (i == 4096)
 		return -1;
 	return i;
 }
 int find_free_blkbmp(){
 	int i = 0;
-	for (; (i < blkbmp_size) && (skbs.block_bitmap[i] != 0); i++);
+	for (; (i < blkbmp_size) && (sbks.block_bitmap[i] != 0); i++);
 	if (i == 4096)
 		return -1;
 	return i;
 }
-int find_free_dir_entry(int inode_id){ 
-	int block_id = inodes[inode_id].i_blocks[0];
-	//判断是否为文件夹 
-	_dir_block block1 = get_dirblock(block_id);//找到block
+int find_free_dir_entry(int inode_id){
+	if (inodes[inode_id].i_mode == 1)
+		return -2;
+	int block_id = inodes[inode_id].i_blocks[0]; 
+	_dir_block block1 = get_dirblock(inode_id);//找到block
 	int i = 0;
-	for (; (i<16)&&(block->dirs.name[0] != '\0'); i++);
+	for (; (i<16)&&(block1.dirs[i].name[0] != '\0'); i++);
 	if (i==16)
 		return -1;
 	return i;
 }
-int echo(char path[],int inode_id, char str[]) //未测试 
+
+//将str在当前文件夹中写入inode_id 
+int echo(char path[],int inode_id, char str[]) 
 /*要不要考虑把当前inode_id设为全局变量，新建函数判断path为相对路径/绝对路径，结果返回根目录/当前目录 
 另外，既然findpath既得到是否存在，又得到inode，不如去掉error函数放在各个命令实现里 
 */
@@ -65,19 +106,43 @@ int echo(char path[],int inode_id, char str[]) //未测试
 			path_up[i] = '\0';
 		}
 	}
-	int upstr_inode_id = FindPath(path_up[],inode_id);
+	int upstr_inode_id = FindPath(path_up, inode_id);
 	if (upstr_inode_id==-1){
-		printf("%s No such directory\n",path_up[]);
+		printf("%s No such directory\n",path_up);
 		return -1;
 	}//这里其实重复查找了，完成后可考虑修改FindPath函数 
-	int str_inode_id = FindPath(path[],inode_id);
+	int str_inode_id = FindPath(path, inode_id);
 	if (str_inode_id==-1){
-		int x = find_free_dir_entry(y);
+		int x = find_free_dir_entry(upstr_inode_id);
 		if (x==-1){
-			printf("%s is full\n",path_up[]);
+			printf("%s is full\n",path_up);
 			return -1;
 		}
-		//创建path文件，将str_inode_id定义为创建的inode_id 
+		if (x==-2){//好像你那边有个函数能做这个事？ 
+			printf("%s is not a directory\n",path_up);
+			return -1;
+		}
+		str_inode_id = find_free_indbmp();
+		int str_block_id = find_free_blkbmp();
+		if (str_inode_id==-1){
+			printf("All inodes are used\n");
+			return -1;
+		}
+		if (str_block_id==-1){
+			printf("All blocks are used\n");
+			return -1;
+		}
+		//inodes[str_inode_id].i_id = 
+		inodes[str_inode_id].i_mode = 1;
+		inodes[str_inode_id].i_blocks[0] = str_block_id;
+		//inodes[str_inode_id].i_file_size =
+		//不必清除inode/block，因为它们本来就是空的 
+		sbks.inode_bitmap[str_inode_id] = 1;
+		sbks.block_bitmap[str_block_id] = 1;
+		UpdateIndBmp(str_inode_id);
+		UpdateBlkBmp(str_block_id);
+		UpdateInode(str_inode_id);
 	}
-	inodes[str_inode_id].i_blocks[0]
+	write_fileblock_into_file(str,inodes[inode_id].i_blocks[0]);
+	return 0;
 }
