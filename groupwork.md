@@ -35,7 +35,7 @@
     rm
 ## 成员函数
     InitDisk 初始化磁盘，判断是否首次运行
-    ClearDisk 格式化磁盘
+    FormatDisk 格式化磁盘
     FindFile 寻找文件并判断
     ShowPath 显示当前路径
     PathError 报错文件或目录不存在

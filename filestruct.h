@@ -1,10 +1,10 @@
 #ifndef FILESTRUCT_H
 #define FILESTRUCT_H
+#include "Filesys.h"
+#define PLACEHOLDER 16
+extern const char filename[12];
+extern const int inode_size,datablk_size, dir_size, indbmp_size, blkbmp_size, inodes_size;
 
-const char filename[12] = "Filesys.vfs";
-const int inode_size = 32, datablk_size = 4096, dir_size = 256;
-const int indbmp_size = 4096, blkbmp_size = 4096, inodes_size = inode_size * 4096;
-const int PLACEHOLDER = 16;
 struct _super_block {
     bool inode_bitmap[4096];
     bool block_bitmap[4096];

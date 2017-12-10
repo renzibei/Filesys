@@ -1,4 +1,8 @@
 #include "qu.h"
+const char filename[12] = "Filesys.vfs";
+const int inode_size = 32, datablk_size = 4096, dir_size = 256;
+const int indbmp_size = 4096, blkbmp_size = 4096, inodes_size = inode_size * 4096;
+
 
 long DataBlkPos(int x) //返回第x个data_block在磁盘文件中的位置
 {
@@ -71,15 +75,6 @@ void MakeHome()
     inodes[0].i_mode = 0;
     inodes[0].i_blocks[0] = 0;
     UpdateInode(0);
-    //char point[2] = ".";
-    /*fseek(vfs,DataBlkPos(0),SEEK_SET);
-    fseek(vfs,DirsPos(0),SEEK_CUR);
-    char points[3] = "..";
-    fwrite(points, sizeof(char), 1, vfs);
-    fseek(vfs,DataBlkPos(0),SEEK_SET);
-    fseek(vfs,DirsPos(252),SEEK_CUR);
-    int zero = 0;
-    fwrite(&zero, sizeof(int), 1, vfs); */
     WriteDir(".",0,0);
     WriteDir("..",1,0);
     
@@ -94,8 +89,10 @@ void FormatDisk()
     //memset(dbks, 0, sizeof(dbks));
     bool _zero = 0;
     FILE *vfs = fopen(filename,"wb");
-    for(int i = 0; i < 16520; ++i)
+    for(int i = 0; i < indbmp_size + datablk_size + inodes_size + datablk_size * blkbmp_size; ++i)  {
+        //cout << ftell(vfs) << endl;
         fwrite(&_zero, sizeof(_zero), 1, vfs);
+    }
     fclose(vfs);
     MakeHome();
     
