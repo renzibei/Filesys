@@ -13,5 +13,7 @@ struct workdir_pathnode{
 };
 
 int InitDisk();
+int WaitMessage();
+bool IsExit(int);
 
 #endif

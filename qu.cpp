@@ -69,9 +69,16 @@ int UpdateInode(int x)
     return 0;
 }
 
-void MakeDir()
+int MakeDir(char path[])
 {
-    
+    int path_len = (int) strlen(path), divpos = -1;
+    for(int i = path[path_len-1]; i > -1; --i)
+        if(path[i] == '/') {
+            divpos = i;
+            break;
+        }
+    if(divpos == -1)
+        
 }
 
 void MakeHome()
@@ -301,7 +308,7 @@ void InitTempWD()
     tempwd = temptail->prevdir;
 }
 
-int ShowWorkPath()
+int PrintWorkPath()
 {
     for(workdir_pathnode* itdir = pathhead; itdir != NULL; itdir = itdir->nextdir) {
         cout << itdir->dirname << '/';
@@ -332,7 +339,8 @@ int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正
         //PathError(path);
         return -1;
     }
-    //InitTempWD();
+    if(type_judge == 1)
+        InitTempWD();
     int dst_inode_id = FindPath(path, src_inode);
     if(dst_inode_id == -1) {
        // PathError(path);
@@ -340,7 +348,7 @@ int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正
     }
     
     if(inodes[dst_inode_id].i_mode == 1) {
-        //PathError(path)
+        //DirError(path)
         return -2;
     }
     if(type_judge == 1)
@@ -348,8 +356,9 @@ int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正
     return 0;
 }
 
-int cd(char path[])
+int ChangeDir(char path[])
 {
+    /*
     int path_len = (int) strlen(path);
     int src_inode = 0;
     int SonDirStatus = 0;
@@ -381,20 +390,69 @@ int cd(char path[])
         DirError(path);
         return -1;
     }
-    SwitchWorkDir(SonDirStatus);
+    SwitchWorkDir(SonDirStatus); */
+    int returnstatus = GetDirPathInode(path, 1);
+    if(returnstatus == -1)
+        PathError(path);
+    else if(returnstatus == -2)
+        DirError(path);
+    return returnstatus;
+}
+
+int ListDirs(char path[])
+{
     return 0;
 }
 
 int WaitMessage()
 {
-    cout << "<" ;
+    cout << ">> " ;
     memset(inputbuffer, 0, sizeof(inputbuffer));
     cin >> inputbuffer;
     char dirpath[input_buffer_length] = {0};
-    if(inputbuffer[0] == 'c') {
-        strcpy(dirpath, inputbuffer + 3);
-        cd(dirpath);
+    switch (inputbuffer[0]) {
+        case 'c':
+        {
+            if(inputbuffer[1] != 'd') {
+                PathError(inputbuffer);
+                return 1;
+            }
+            strcpy(dirpath, inputbuffer + 3);
+            ChangeDir(dirpath);
+        }
+            break;
+        case 'p':
+        {
+            if(strncmp(inputbuffer,"pwd",3) != 0 ) {
+                PathError(inputbuffer);
+                return 1;
+            }
+            else PrintWorkPath();
+        }
+            break;
+        case 'l':
+        {
+            if(strncmp(inputbuffer, "ls", 2) != 0) {
+                PathError(inputbuffer);
+                return 1;
+            }
+            strcpy(dirpath, inputbuffer + 3);
+            ListDirs(dirpath);
+        }
+            break;
+        case 'm':
+        {
+            if(strncmp(inputbuffer, "mkdir", 5) != 0) {
+                PathError(inputbuffer);
+                return 1;
+            }
+            strcpy(dirpath, inputbuffer + 6);
+            MakeDir(dirpath);
+        }
+            break;
+        default:
+            break;
     }
-    else if(inputbuffer[0] == 'p');
+    
     return 0;
 }
