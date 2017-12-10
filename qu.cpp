@@ -69,6 +69,11 @@ int UpdateInode(int x)
     return 0;
 }
 
+void MakeDir()
+{
+    
+}
+
 void MakeHome()
 {
     
@@ -230,9 +235,15 @@ void DirError(char path[])
     cout << path << " " << "is not a directory." << endl;
 }
 
-int GetWorkDir();
+int GetWorkDir()
+{
+    return wkpath->dir_inode;
+}
 
-int GetFatDir(int);
+int GetFatDir()
+{
+    return wkpath->prevdir->dir_inode;
+}
 
 int SwitchWorkDir(int status)
 {
@@ -298,7 +309,7 @@ int cd(char path[])
         src_inode = 0;
     else if(path[0] == '.') {
         if(path_len ==2 && path[1] == '.') {
-            src_inode = GetFatDir(GetWorkDir());
+            src_inode = GetFatDir();
             SonDirStatus = 2;
         }
         else if(path_len == 1) {
