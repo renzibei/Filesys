@@ -2,7 +2,8 @@
 #define FILESTRUCT_H
 
 const char filename[12] = "Filesys.vfs";
-
+const int inode_size = 32, datablk_size = 4096;
+const int indbmp_size = 4096, blkbmp_size = 4096, inodes_size = inode_size * 4096;
 struct _super_block {
     bool inode_bitmap[4096];
     bool block_bitmap[4096];
