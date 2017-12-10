@@ -13,7 +13,7 @@ struct _inode {
     int i_mode; // 0代表文件夹，1代表文件
     int i_file_size;
     //...
-    int i_blocks[1];
+    int i_blocks[1]; //都是从0开始数
     char i_place_holder[16]; //占位符
 } inodes[4096];
 
