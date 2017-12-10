@@ -71,7 +71,14 @@ int UpdateInode(int x)
 
 int MakeDir(char path[])
 {
-    
+    int path_len = (int) strlen(path), divpos = -1;
+    for(int i = path[path_len-1]; i > -1; --i)
+        if(path[i] == '/') {
+            divpos = i;
+            break;
+        }
+    if(divpos == -1)
+        
 }
 
 void MakeHome()
@@ -392,7 +399,7 @@ int ChangeDir(char path[])
     return returnstatus;
 }
 
-int ListDirPath(char path[])
+int ListDirs(char path[])
 {
     return 0;
 }

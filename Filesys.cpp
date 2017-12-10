@@ -14,7 +14,8 @@ int main()
 {
     InitDisk();
     for(;;) {
-        
+        if(IsExit(WaitMessage()))
+            break;
     }
     return 0;
 }
