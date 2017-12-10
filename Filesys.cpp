@@ -7,9 +7,11 @@
 
 
 #include "Filesys.h"
+_super_block sbks;
+_inode inodes[4096];
 
 int main()
 {
     
-    
+    return 0;
 }

@@ -14,6 +14,9 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
+extern _inode inodes[4096];
+extern _super_block sbks;
+
 using namespace std;
 
 

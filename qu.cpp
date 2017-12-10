@@ -104,7 +104,13 @@ void FormatDisk()
 
 int InitBuffer()
 {
-    
+    FILE *vfs = fopen(filename, "rb+");
+    fseek(vfs, 0, SEEK_SET);
+    fread(sbks.inode_bitmap, sizeof(bool), sizeof(sbks.inode_bitmap), vfs);
+    fread(sbks.block_bitmap, sizeof(bool), sizeof(sbks.block_bitmap), vfs);
+    fseek(vfs, InodesPos(0), SEEK_SET);
+    fread(&inodes, sizeof(_inode), 4096, vfs);
+    fclose(vfs);
     return 0;
 }
 

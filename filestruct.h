@@ -8,7 +8,7 @@ const int PLACEHOLDER = 16;
 struct _super_block {
     bool inode_bitmap[4096];
     bool block_bitmap[4096];
-} sbks;
+};
 
 struct _inode {
     int i_id;
@@ -17,7 +17,7 @@ struct _inode {
     //...
     int i_blocks[1]; //都是从0开始数
     char i_place_holder[PLACEHOLDER]; //占位符
-} inodes[4096];
+};
 
 //文件对应数据块
 struct _file_block {
