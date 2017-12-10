@@ -332,7 +332,8 @@ int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正
         //PathError(path);
         return -1;
     }
-    //InitTempWD();
+    if(type_judge == 1)
+        InitTempWD();
     int dst_inode_id = FindPath(path, src_inode);
     if(dst_inode_id == -1) {
        // PathError(path);
@@ -340,7 +341,7 @@ int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正
     }
     
     if(inodes[dst_inode_id].i_mode == 1) {
-        //PathError(path)
+        //DirError(path)
         return -2;
     }
     if(type_judge == 1)
@@ -350,6 +351,7 @@ int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正
 
 int cd(char path[])
 {
+    /*
     int path_len = (int) strlen(path);
     int src_inode = 0;
     int SonDirStatus = 0;
@@ -381,8 +383,13 @@ int cd(char path[])
         DirError(path);
         return -1;
     }
-    SwitchWorkDir(SonDirStatus);
-    return 0;
+    SwitchWorkDir(SonDirStatus); */
+    int returnstatus = GetDirPathInode(path, 1);
+    if(returnstatus == -1)
+        PathError(path);
+    else if(returnstatus == -2)
+        DirError(path);
+    return returnstatus;
 }
 
 int WaitMessage()
