@@ -10,7 +10,7 @@ struct _super_block {
 
 struct _inode {
     int i_id;
-    int i_mode;
+    int i_mode; // 0代表文件夹，1代表文件
     int i_file_size;
     //...
     int i_blocks[1];
