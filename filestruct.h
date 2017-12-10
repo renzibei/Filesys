@@ -31,10 +31,10 @@ struct dir_entry {
 struct _dir_block {
     dir_entry dirs[16];
 };
-
+/*
 struct _data_block {
     _file_block *file_block;
     _dir_block *dir_block;
-} dbks[4096];
+} dbks[4096];*/
 
 #endif

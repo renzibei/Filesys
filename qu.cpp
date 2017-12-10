@@ -21,7 +21,7 @@ void FormatDisk()
     memset(sbks.block_bitmap, 0, sizeof(sbks.block_bitmap));
     memset(sbks.inode_bitmap, 0, sizeof(sbks.inode_bitmap));
     memset(inodes, 0, sizeof(inodes));
-    memset(dbks, 0, sizeof(dbks));
+    //memset(dbks, 0, sizeof(dbks));
     FILE *vfs = fopen(filename,"wb");
     fclose(vfs);
 }
