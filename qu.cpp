@@ -69,7 +69,7 @@ int UpdateInode(int x)
     return 0;
 }
 
-void MakeDir()
+int MakeDir(char path[])
 {
     
 }
@@ -301,7 +301,7 @@ void InitTempWD()
     tempwd = temptail->prevdir;
 }
 
-int ShowWorkPath()
+int PrintWorkPath()
 {
     for(workdir_pathnode* itdir = pathhead; itdir != NULL; itdir = itdir->nextdir) {
         cout << itdir->dirname << '/';
@@ -349,7 +349,7 @@ int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正
     return 0;
 }
 
-int cd(char path[])
+int ChangeDir(char path[])
 {
     /*
     int path_len = (int) strlen(path);
@@ -392,16 +392,60 @@ int cd(char path[])
     return returnstatus;
 }
 
+int ListDirPath(char path[])
+{
+    return 0;
+}
+
 int WaitMessage()
 {
-    cout << "<" ;
+    cout << ">> " ;
     memset(inputbuffer, 0, sizeof(inputbuffer));
     cin >> inputbuffer;
     char dirpath[input_buffer_length] = {0};
-    if(inputbuffer[0] == 'c') {
-        strcpy(dirpath, inputbuffer + 3);
-        cd(dirpath);
+    switch (inputbuffer[0]) {
+        case 'c':
+        {
+            if(inputbuffer[1] != 'd') {
+                PathError(inputbuffer);
+                return 1;
+            }
+            strcpy(dirpath, inputbuffer + 3);
+            ChangeDir(dirpath);
+        }
+            break;
+        case 'p':
+        {
+            if(strncmp(inputbuffer,"pwd",3) != 0 ) {
+                PathError(inputbuffer);
+                return 1;
+            }
+            else PrintWorkPath();
+        }
+            break;
+        case 'l':
+        {
+            if(strncmp(inputbuffer, "ls", 2) != 0) {
+                PathError(inputbuffer);
+                return 1;
+            }
+            strcpy(dirpath, inputbuffer + 3);
+            ListDirs(dirpath);
+        }
+            break;
+        case 'm':
+        {
+            if(strncmp(inputbuffer, "mkdir", 5) != 0) {
+                PathError(inputbuffer);
+                return 1;
+            }
+            strcpy(dirpath, inputbuffer + 6);
+            MakeDir(dirpath);
+        }
+            break;
+        default:
+            break;
     }
-    else if(inputbuffer[0] == 'p');
+    
     return 0;
 }
