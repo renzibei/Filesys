@@ -187,7 +187,7 @@ void NewWorkDirNode(int far_inode_id,int son_inode_id,int rela_son_id)
     tempwd = cur_dirnode;
 }
 
-int FindPath(char path[], int inode_id)
+int FindPath(char path[], int inode_id,int type_find = 0)
 {
     int path_len = (int) strlen(path);
     char SonDirPath[252] = {0};
@@ -206,7 +206,8 @@ int FindPath(char path[], int inode_id)
     int son_inode_id = FindSonPath(SonDirPath, inode_id, relasondir);
     if(son_inode_id == -1)
         return -1;
-    NewWorkDirNode(inode_id, son_inode_id, relasondir);
+    if(type_find == 1)
+        NewWorkDirNode(inode_id, son_inode_id, relasondir);
     memset(SonDirPath, 0, sizeof(SonDirPath));
     strcpy(SonDirPath, path + AnoDirPos + 1);
     return FindPath(SonDirPath, son_inode_id);
@@ -300,6 +301,53 @@ void InitTempWD()
     tempwd = temptail->prevdir;
 }
 
+int ShowWorkPath()
+{
+    for(workdir_pathnode* itdir = pathhead; itdir != NULL; itdir = itdir->nextdir) {
+        cout << itdir->dirname << '/';
+    }
+    cout << endl;
+    return 0;
+}
+//获得文件夹的inode,文件路径错误时返回值为-1，是文件而不是文件夹时返回-2
+int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正常的获得文件夹的inode
+{
+    int path_len = (int) strlen(path);
+    int src_inode = 0;
+    int SonDirStatus = 0;
+    if(path[0] == '/')
+        src_inode = 0;
+    else if(path[0] == '.') {
+        if(path_len ==2 && path[1] == '.') {
+            src_inode = GetFatDir();
+            SonDirStatus = 2;
+        }
+        else if(path_len == 1) {
+            src_inode = GetWorkDir();
+            SonDirStatus = 1;
+        }
+    }
+    else src_inode = -1;
+    if(src_inode == -1) {
+        //PathError(path);
+        return -1;
+    }
+    //InitTempWD();
+    int dst_inode_id = FindPath(path, src_inode);
+    if(dst_inode_id == -1) {
+       // PathError(path);
+        return -1;
+    }
+    
+    if(inodes[dst_inode_id].i_mode == 1) {
+        //PathError(path)
+        return -2;
+    }
+    if(type_judge == 1)
+        SwitchWorkDir(SonDirStatus);
+    return 0;
+}
+
 int cd(char path[])
 {
     int path_len = (int) strlen(path);
@@ -337,3 +385,16 @@ int cd(char path[])
     return 0;
 }
 
+int WaitMessage()
+{
+    cout << "<" ;
+    memset(inputbuffer, 0, sizeof(inputbuffer));
+    cin >> inputbuffer;
+    char dirpath[input_buffer_length] = {0};
+    if(inputbuffer[0] == 'c') {
+        strcpy(dirpath, inputbuffer + 3);
+        cd(dirpath);
+    }
+    else if(inputbuffer[0] == 'p');
+    return 0;
+}

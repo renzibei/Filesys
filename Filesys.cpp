@@ -13,5 +13,8 @@ _inode inodes[4096];
 int main()
 {
     InitDisk();
+    for(;;) {
+        
+    }
     return 0;
 }
