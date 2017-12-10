@@ -3,7 +3,9 @@ const char filename[12] = "Filesys.vfs";
 const int inode_size = 32, datablk_size = 4096, dir_size = 256;
 const int indbmp_size = 4096, blkbmp_size = 4096, inodes_size = inode_size * 4096;
 
-
+workdir_pathnode *pathhead = NULL;
+workdir_pathnode *wkpath = NULL;
+workdir_pathnode *pathtail = NULL;
 long DataBlkPos(int x) //返回第x个data_block在磁盘文件中的位置
 {
     return indbmp_size + blkbmp_size + inodes_size + datablk_size * x;
@@ -111,6 +113,21 @@ int InitBuffer()
     return 0;
 }
 
+void InitWorPath()
+{
+    pathtail = new workdir_pathnode;
+    pathtail->dir_inode = -1;
+    pathhead = new workdir_pathnode;
+    pathhead->dir_inode = 0;
+    memset(pathhead->dirname, 0, sizeof(pathhead->dirname));
+    memset(pathtail->dirname, 0, sizeof(pathtail->dirname));
+    pathhead->prevdir = NULL;
+    pathtail->nextdir = NULL;
+    pathhead->nextdir = pathtail;
+    pathtail->prevdir = pathhead;
+    wkpath = pathtail->prevdir;
+}
+
 int InitDisk()
 {
     FILE *vfs = fopen(filename,"rb");
@@ -121,5 +138,75 @@ int InitDisk()
     }
     else InitBuffer();
     return 1;
+}
+
+int FindSonPath(char sonpath[],int inode_id)
+{
+    FILE *vfs = fopen(filename, "rb");
+    int dst_inode_id = -1;
+    char pathname[252] = {0};
+    for(int i = 0; i < 16; ++i) {
+        fseek(vfs,DataBlkPos(inodes[inode_id].i_blocks[0]),SEEK_SET);
+        fseek(vfs,DirsPos(i),SEEK_CUR);
+        fread(pathname, sizeof(char), 252, vfs);
+        if(strcmp(sonpath, pathname) == 0) {
+            fread(&dst_inode_id, sizeof(int), 1, vfs);
+            return dst_inode_id;
+        }
+    }
+    fclose(vfs);
+    return -1;
+}
+
+int FindPath(char path[], int inode_id)
+{
+    int path_len = (int) strlen(path);
+    char SonDirPath[252] = {0};
+    int AnoDirPos = 0;
+    bool AnotherDir = 0;
+    for(int i = 1; i < path_len; ++i)
+        if(path[i] == '/') {
+            AnotherDir = 1;
+            AnoDirPos = i;
+            break;
+        }
+    if(!AnotherDir)
+        return inode_id;
+    
+    strncpy(SonDirPath, path + 1, AnoDirPos);
+    int son_inode_id = FindSonPath(SonDirPath, inode_id);
+    if(son_inode_id == -1)
+        return -1;
+    memset(SonDirPath, 0, sizeof(SonDirPath));
+    strcpy(SonDirPath, path + AnoDirPos + 1);
+    return FindPath(SonDirPath, son_inode_id);
+}
+void PathError();
+void DirError();
+int GetWorkDir();
+int GetFatDir(int);
+int cd(char path[])
+{
+    int path_len = (int) strlen(path);
+    int src_inode = 0;
+    if(path[0] == '/')
+        src_inode = 0;
+    else if(path[0] == '.') {
+        if(path_len ==2 && path[1] == '.')
+            src_inode = GetFatDir(GetWorkDir());
+        else if(path_len == 1)
+            src_inode = GetWorkDir();
+        else src_inode = -1;
+    }
+    else src_inode = -1;
+    if(src_inode == -1)
+        PathError();
+    int dst_inode_id = FindPath(path, src_inode);
+    if(dst_inode_id == -1)
+        PathError();
+    if(inodes[dst_inode_id].i_mode == 1)
+        DirError();
+    
+    return 0;
 }
 
