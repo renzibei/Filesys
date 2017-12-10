@@ -53,7 +53,7 @@ void WriteDir(const char *dir_name, int dir_id, int inode_id)
     fseek(vfs,DirsPos(dir_id),SEEK_CUR);
     fwrite(dir_name,sizeof(char), strlen(dir_name), vfs);
     fseek(vfs,DataBlkPos(inode_id),SEEK_SET);
-    fseek(vfs,DirsPos(252),SEEK_CUR);
+    fseek(vfs,252,SEEK_CUR);
     fwrite(&inode_id, sizeof(int), 1, vfs);
     fclose(vfs);
 }
@@ -143,7 +143,7 @@ int InitDisk()
     return 1;
 }
 
-int FindSonPath(char sonpath[],int inode_id)
+int FindSonPath(char sonpath[],int inode_id, int &relasondir)
 {
     FILE *vfs = fopen(filename, "rb");
     int dst_inode_id = -1;
@@ -161,6 +161,27 @@ int FindSonPath(char sonpath[],int inode_id)
     return -1;
 }
 
+void GetDirName(int inode_id, int rela_son_id, char* dir_name)
+{
+    FILE *vfs = fopen(filename, "rb");
+    fseek(vfs, DataBlkPos(inode_id), SEEK_SET);
+    fseek(vfs, DirsPos(rela_son_id), SEEK_CUR);
+    fread(dir_name, sizeof(char), 252, vfs);
+    fclose(vfs);
+}
+
+void NewWorkDirNode(int far_inode_id,int son_inode_id,int rela_son_id)
+{
+    workdir_pathnode *cur_dirnode = new workdir_pathnode;
+    cur_dirnode->dir_inode = son_inode_id;
+    GetDirName(far_inode_id, rela_son_id, cur_dirnode->dirname);
+    cur_dirnode->prevdir = tempwd;
+    tempwd->nextdir = cur_dirnode;
+    cur_dirnode->nextdir = temptail;
+    temptail->prevdir = cur_dirnode;
+    tempwd = cur_dirnode;
+}
+
 int FindPath(char path[], int inode_id)
 {
     int path_len = (int) strlen(path);
@@ -175,48 +196,133 @@ int FindPath(char path[], int inode_id)
         }
     if(!AnotherDir)
         return inode_id;
-    
     strncpy(SonDirPath, path + 1, AnoDirPos);
-    int son_inode_id = FindSonPath(SonDirPath, inode_id);
+    int relasondir = -1;
+    int son_inode_id = FindSonPath(SonDirPath, inode_id, relasondir);
     if(son_inode_id == -1)
         return -1;
+    NewWorkDirNode(inode_id, son_inode_id, relasondir);
     memset(SonDirPath, 0, sizeof(SonDirPath));
     strcpy(SonDirPath, path + AnoDirPos + 1);
     return FindPath(SonDirPath, son_inode_id);
 }
 
-void PathError();
+void FreeDirPath(workdir_pathnode *tempnode)
+{
+    for(workdir_pathnode *tpdir = tempnode; tpdir != NULL; tpdir = tempnode) {
+        tempnode = tpdir->nextdir;
+        delete tpdir;
+    }
+    
+}
 
-void DirError();
+void PathError(char path[])
+{
+    FreeDirPath(temphead);
+    cout << path << " " << "No such file or directory" << endl;
+    
+    //..
+}
+
+void DirError(char path[])
+{
+    FreeDirPath(temphead);
+    cout << path << " " << "is not a directory." << endl;
+}
 
 int GetWorkDir();
 
 int GetFatDir(int);
 
+int SwitchWorkDir(int status)
+{
+    switch (status) {
+        case 0:
+        {
+            FreeDirPath(wkpath);
+            wkpath = tempwd;
+            pathhead = temphead;
+            pathtail = temptail;
+        }
+            break;
+        case 1:
+        {
+            wkpath->nextdir = temphead->nextdir;
+            temphead->nextdir->prevdir = wkpath->nextdir;
+            delete pathtail;
+            delete temphead;
+            pathtail = temptail;
+        }
+            break;
+        case 2:
+        {
+            wkpath->prevdir->nextdir = temphead->nextdir;
+            temphead->nextdir->prevdir = wkpath->prevdir;
+            delete wkpath;
+            delete pathtail;
+            delete temphead;
+            wkpath = tempwd;
+            pathtail = temptail;
+        }
+            break;
+        default:
+            break;
+    }
+    tempwd = NULL;
+    temptail = NULL;
+    temphead =NULL;
+    return 0;
+}
+
+void InitTempWD()
+{
+    temptail = new workdir_pathnode;
+    temptail->dir_inode = -1;
+    temphead = new workdir_pathnode;
+    temphead->dir_inode = 0;
+    memset(temphead->dirname, 0, sizeof(temphead->dirname));
+    memset(temptail->dirname, 0, sizeof(temptail->dirname));
+    temphead->prevdir = NULL;
+    temptail->nextdir = NULL;
+    temphead->nextdir = temptail;
+    temptail->prevdir = temphead;
+    tempwd = temptail->prevdir;
+}
+
 int cd(char path[])
 {
     int path_len = (int) strlen(path);
     int src_inode = 0;
-    
-    
+    int SonDirStatus = 0;
     if(path[0] == '/')
         src_inode = 0;
     else if(path[0] == '.') {
-        if(path_len ==2 && path[1] == '.')
+        if(path_len ==2 && path[1] == '.') {
             src_inode = GetFatDir(GetWorkDir());
-        else if(path_len == 1)
+            SonDirStatus = 2;
+        }
+        else if(path_len == 1) {
             src_inode = GetWorkDir();
-        else src_inode = -1;
+            SonDirStatus = 1;
+        }
     }
     else src_inode = -1;
-    if(src_inode == -1)
-        PathError();
+    if(src_inode == -1) {
+        PathError(path);
+        return -1;
+    }
+    InitTempWD();
     int dst_inode_id = FindPath(path, src_inode);
-    if(dst_inode_id == -1)
-        PathError();
-    if(inodes[dst_inode_id].i_mode == 1)
-        DirError();
+    if(dst_inode_id == -1) {
+        PathError(path);
+        return -1;
+    }
     
+    if(inodes[dst_inode_id].i_mode == 1) {
+        DirError(path);
+        return -1;
+    }
+    SwitchWorkDir(SonDirStatus);
     return 0;
 }
 
