@@ -310,7 +310,7 @@ int ShowWorkPath()
     return 0;
 }
 //获得文件夹的inode,文件路径错误时返回值为-1，是文件而不是文件夹时返回-2
-int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正常的获得文件夹的inode
+int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正常的获得文件夹的inode 普通调用时可忽略这一参数
 {
     int path_len = (int) strlen(path);
     int src_inode = 0;
