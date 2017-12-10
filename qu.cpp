@@ -4,8 +4,11 @@ const int inode_size = 32, datablk_size = 4096, dir_size = 256;
 const int indbmp_size = 4096, blkbmp_size = 4096, inodes_size = inode_size * 4096;
 
 workdir_pathnode *pathhead = NULL;
-workdir_pathnode *wkpath = NULL;
+workdir_pathnode *wkpath   = NULL;
 workdir_pathnode *pathtail = NULL;
+workdir_pathnode *temphead = NULL;
+workdir_pathnode *tempwd   = NULL;
+workdir_pathnode *temptail = NULL;
 long DataBlkPos(int x) //返回第x个data_block在磁盘文件中的位置
 {
     return indbmp_size + blkbmp_size + inodes_size + datablk_size * x;
@@ -181,14 +184,21 @@ int FindPath(char path[], int inode_id)
     strcpy(SonDirPath, path + AnoDirPos + 1);
     return FindPath(SonDirPath, son_inode_id);
 }
+
 void PathError();
+
 void DirError();
+
 int GetWorkDir();
+
 int GetFatDir(int);
+
 int cd(char path[])
 {
     int path_len = (int) strlen(path);
     int src_inode = 0;
+    
+    
     if(path[0] == '/')
         src_inode = 0;
     else if(path[0] == '.') {
