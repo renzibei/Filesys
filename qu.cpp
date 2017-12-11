@@ -215,9 +215,9 @@ int FindPath(char path[], int inode_id,int type_find = 0)
         return -1;
     if(type_find == 1)
         NewWorkDirNode(inode_id, son_inode_id, relasondir);
-    memset(SonDirPath, 0, sizeof(SonDirPath));
-    strcpy(SonDirPath, path + AnoDirPos + 1);
-    return FindPath(SonDirPath, son_inode_id);
+    //memset(SonDirPath, 0, sizeof(SonDirPath));
+   // strcpy(SonDirPath, path + AnoDirPos + 1);
+    return FindPath(path + AnoDirPos +1, son_inode_id);
 }
 
 void FreeDirPath(workdir_pathnode *tempnode)
