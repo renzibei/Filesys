@@ -210,6 +210,9 @@ int FindPath(char path[], int inode_id,int type_find = 0)
         }
     if(!AnotherDir) {
         if(path_len == 0)
+            son_inode_id = inode_id;
+        if(type_find == 1)
+            NewWorkDirNode(inode_id, son_inode_id, relasondir);
         son_inode_id = FindSonPath(path, inode_id, relasondir);
         return son_inode_id;
     }
@@ -219,8 +222,6 @@ int FindPath(char path[], int inode_id,int type_find = 0)
         return -1;
     if(type_find == 1)
         NewWorkDirNode(inode_id, son_inode_id, relasondir);
-    //memset(SonDirPath, 0, sizeof(SonDirPath));
-   // strcpy(SonDirPath, path + AnoDirPos + 1);
     return FindPath(path + AnoDirPos + 1, son_inode_id);
 }
 
@@ -448,7 +449,7 @@ int ChangeDir(char path[])
     int returnstatus = GetPathInode(path, 1);
     if(returnstatus == -1)
         PathError(path);
-    else if(nodes[returnstatus].i_mode == 1)
+    else if(inodes[returnstatus].i_mode == 1)
         DirError(path);
     return returnstatus;
 }
