@@ -14,8 +14,6 @@ int UpdateIndBmp(int x);
 int UpdateBlkBmp(int x);
 int UpdateInode(int x); 
 //×¢Òâ£¬WriteDirº¯ÊýÖÐÐ´Èëdir_nameÃ»ÓÐ°ÑºóÃæ²¹È«'\0' 
-//½¨Á¢µÄÎÄ¼þ¼ÐÁªÏµ²»´ú±í´æÔÚÕâÑùÒ»¸öÎÄ¼þ¼Ð£¬´Ëº¯ÊýÊ®·ÖÎ£ÏÕ
-//´Ëº¯ÊýºÃÏñÓÐÎÊÌâ£¬DirsPos(252)ÊÇ²»¶ÔµÄ 
 //ÒÔÉÏÀ´×Ôqu.cpp 
 
 //_super_block sbks;
@@ -36,15 +34,16 @@ _dir_block get_dirblock(int inode_id)//´´½¨dirblock£¬¾¯¸æ£¬Ã¿´ÎÊ¹ÓÃdirblockÖ®Ç°¶
     fclose(vfs);
     return block;
 }
-void get_fileblock(int inode_id, char* fileblock)//´´½¨fileblock£¬¾¯¸æ£¬Ã¿´ÎÊ¹ÓÃfileblockÖ®Ç°¶¼ÐèÒªÅÐ¶ÏÊÇ·ñÎªÎÄ¼þ 
+_file_block get_fileblock(int inode_id)//´´½¨fileblock£¬¾¯¸æ£¬Ã¿´ÎÊ¹ÓÃfileblockÖ®Ç°¶¼ÐèÒªÅÐ¶ÏÊÇ·ñÎªÎÄ¼þ 
 {
+	_file_block fileblock;
     FILE *vfs = fopen(filename, "rb+");
     int block_id = inodes[inode_id].i_blocks[0];
     int Position = DataBlkPos(block_id);
     fseek(vfs, Position, SEEK_SET);
-    fread(fileblock ,sizeof(fileblock), 1, vfs);
+    fread(fileblock.data ,sizeof(fileblock.data), 1, vfs);
     fclose(vfs);
-    return;
+    return fileblock;
 }
 void write_fileblock_into_file(char str[],int block_id)//ÔÚblock_idÉÏÊéÐ´str£¬¾¯¸æ£¬Ã¿´ÎÊ¹ÓÃÇ°Ðè±£Ö¤ÊÇÎÄ¼þ 
 {
@@ -82,11 +81,8 @@ int find_free_dir_entry(int inode_id){
 	return i;
 }
 
-//½«strÔÚµ±Ç°ÎÄ¼þ¼ÐÖÐÐ´Èëinode_id 
-int echo(char path[],int inode_id, char str[]) 
-/*Òª²»Òª¿¼ÂÇ°Ñµ±Ç°inode_idÉèÎªÈ«¾Ö±äÁ¿£¬ÐÂ½¨º¯ÊýÅÐ¶ÏpathÎªÏà¶ÔÂ·¾¶/¾ø¶ÔÂ·¾¶£¬½á¹û·µ»Ø¸ùÄ¿Â¼/µ±Ç°Ä¿Â¼ 
-ÁíÍâ£¬¼ÈÈ»findpath¼ÈµÃµ½ÊÇ·ñ´æÔÚ£¬ÓÖµÃµ½inode£¬²»ÈçÈ¥µôerrorº¯Êý·ÅÔÚ¸÷¸öÃüÁîÊµÏÖÀï 
-*/
+//½«strÔÚÐ´ÈëpathÂ·¾¶µÄÎÄ¼þ 
+int echo(char path[],int inode_id, char str[])
 {
 	char path_up[252] = {0};
 	int UpDirPos = 0;
@@ -111,6 +107,10 @@ int echo(char path[],int inode_id, char str[])
 		printf("%s No such directory\n",path_up);
 		return -1;
 	}//ÕâÀïÆäÊµÖØ¸´²éÕÒÁË£¬Íê³Éºó¿É¿¼ÂÇÐÞ¸ÄFindPathº¯Êý 
+	if (inodes[upstr_inode_id].i_mode == 0){
+		printf("%s is not directory\n",path);
+		return -1;
+	} 
 	int str_inode_id = FindPath(path, inode_id);
 	if (str_inode_id==-1){
 		int x = find_free_dir_entry(upstr_inode_id);
@@ -132,10 +132,10 @@ int echo(char path[],int inode_id, char str[])
 			printf("All blocks are used\n");
 			return -1;
 		}
-		//inodes[str_inode_id].i_id = 
+		inodes[str_inode_id].i_id = str_inode_id; 
 		inodes[str_inode_id].i_mode = 1;
 		inodes[str_inode_id].i_blocks[0] = str_block_id;
-		//inodes[str_inode_id].i_file_size =
+		inodes[str_inode_id].i_file_size = sizeof(str);
 		//²»±ØÇå³ýinode/block£¬ÒòÎªËüÃÇ±¾À´¾ÍÊÇ¿ÕµÄ 
 		sbks.inode_bitmap[str_inode_id] = 1;
 		sbks.block_bitmap[str_block_id] = 1;
@@ -144,5 +144,44 @@ int echo(char path[],int inode_id, char str[])
 		UpdateInode(str_inode_id);
 	}
 	write_fileblock_into_file(str,inodes[inode_id].i_blocks[0]);
+	return 0;
+}
+
+//½«¶ÁÈ¡pathÂ·¾¶µÄÎÄ¼þ 
+int cat(char path[],int inode_id)
+{
+	char path_up[252] = {0};
+	int UpDirPos = 0;
+	bool UpDir = 0;
+	for (int i = 251; i >= 0; i--){
+		if(path[i] == '/') {
+            UpDir = 1;
+            UpDirPos = i;
+            break;
+        }
+	}
+	if (UpDir){
+		for (int i = UpDirPos - 1; i >= 0; i--){
+			path_up[i] = path[i];
+		}
+		for (int i = UpDirPos; i < 252; i++){
+			path_up[i] = '\0';
+		}
+	}
+	int upstr_inode_id = FindPath(path_up, inode_id);
+	if (upstr_inode_id==-1){
+		printf("%s No such directory\n",path_up);
+		return -1;
+	}
+	if (inodes[upstr_inode_id].i_mode == 0){
+		printf("%s is not directory\n",path);
+		return -1;
+	} //ÕâÀïÒ²ÊÇÖØ¸´²éÕÒ 
+	int str_inode_id = FindPath(path, inode_id);
+	if (str_inode_id==-1){
+		printf("%s No such file\n",path);
+		return -1;
+	}
+	printf("%s\n",get_fileblock(str_inode_id).data);
 	return 0;
 }
