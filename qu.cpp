@@ -367,15 +367,16 @@ int GetPathInode(char path[], int type_judge = 0) //
     int SonDirStatus = 0;
     if(path[0] == '/')
         src_inode = 0;
-    else if(path[0] == '.') {
-        if(path[1] == '.' && path[2] == '/') {
-            src_inode = GetFatDir();
-            SonDirStatus = 2;
-        }
-        else if(path[1] == '/') {
+    else if(path[0] == '.' && path_len > 1) {
+        if(path[1] == '/') {
             src_inode = GetWorkDir();
             SonDirStatus = 1;
         }
+        else if(path_len > 2 && path[1] == '.' && path[2] == '/') {
+            src_inode = GetFatDir();
+            SonDirStatus = 2;
+        }
+        
     }
     else src_inode = -1;
     if(src_inode == -1) {
