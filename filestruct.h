@@ -1,7 +1,7 @@
 #ifndef FILESTRUCT_H
 #define FILESTRUCT_H
 #include "Filesys.h"
-#define PLACEHOLDER 16
+#define PLACEHOLDER 12
 extern const char filename[12];
 extern const int inode_size,datablk_size, dir_size, indbmp_size, blkbmp_size, inodes_size;
 
@@ -14,6 +14,7 @@ struct _inode {
     int i_id;
     int i_mode; // 0代表文件夹，1代表文件
     int i_file_size;
+    int fat_id; //父文件夹的inode_id,没有则为0
     //...
     int i_blocks[1]; //都是从0开始数
     char i_place_holder[PLACEHOLDER]; //占位符

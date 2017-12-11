@@ -63,9 +63,11 @@ int UpdateInode(int x)
 {
     FILE *vfs = fopen(filename,"rb+");
     fseek(vfs, InodesPos(x), SEEK_SET);
+    fwrite(&inodes[x], sizeof(_inode), 1, vfs)
+    /*
     fwrite(&inodes[x].i_id,sizeof(int), 3, vfs);
     fwrite(&inodes[x].i_blocks,sizeof(int),1,vfs);
-    fwrite(inodes[x].i_place_holder,sizeof(char),PLACEHOLDER,vfs);
+    fwrite(inodes[x].i_place_holder,sizeof(char),PLACEHOLDER,vfs); */
     fclose(vfs);
     return 0;
 }
@@ -124,7 +126,7 @@ int InitBuffer()
     fread(sbks.inode_bitmap, sizeof(bool), sizeof(sbks.inode_bitmap), vfs);
     fread(sbks.block_bitmap, sizeof(bool), sizeof(sbks.block_bitmap), vfs);
     fseek(vfs, InodesPos(0), SEEK_SET);
-    fread(&inodes, sizeof(_inode), 4096, vfs);
+    fread(inodes, sizeof(_inode), 4096, vfs);
     fclose(vfs);
     return 0;
 }
@@ -183,17 +185,41 @@ void GetDirName(int inode_id, int rela_son_id, char* dir_name)
     fclose(vfs);
 }
 
-void NewWorkDirNode(int far_inode_id,int son_inode_id,int rela_son_id)
+int GetSelfName(int inode_id, char* selfname)
+{
+    FILE *vfs = fopen(filename, "rb");
+    int tempid = -1;
+    for(int i = 0; i < 16; ++i) {
+        fseek(vfs, DataBlkPos(inodes[inode_id].fat_id), SEEK_SET);
+        fseek(vfs, DirsPos(i), SEEK_CUR);
+        fseek(vfs, 252L, SEEK_CUR);
+        fread(&tempid, sizeof(int), 1, vfs);
+        if(tempid == inode_id) {
+            fseek(vfs, DataBlkPos(inode_id), SEEK_SET);
+            fseek(vfs, DirsPos(i), SEEK_CUR);
+            fread(selfname, sizeof(char), 252, vfs);
+            fclose(vfs);
+            return 1;
+        }
+    }
+    fclose(vfs);
+    return -1;
+}
+
+void NewWorkDirNode(int far_inode_id,int son_inode_id,int rela_son_id = 0)
 {
     workdir_pathnode *cur_dirnode = new workdir_pathnode;
     cur_dirnode->dir_inode = son_inode_id;
-    GetDirName(far_inode_id, rela_son_id, cur_dirnode->dirname);
+    GetSelfName(son_inode_id, cur_dirnode->dirname);
+    //GetDirName(far_inode_id, rela_son_id, cur_dirnode->dirname);
     cur_dirnode->prevdir = tempwd;
     tempwd->nextdir = cur_dirnode;
     cur_dirnode->nextdir = temptail;
     temptail->prevdir = cur_dirnode;
     tempwd = cur_dirnode;
 }
+
+
 
 int FindPath(char path[], int inode_id,int type_find = 0)
 {
@@ -387,7 +413,6 @@ int GetPathInode(char path[], int type_judge = 0) // 要改改
             SonDirStatus = 2;
             nextdirpos = 3;
         }
-        
     }
     else src_inode = -1;
     if(src_inode == -1) {
@@ -456,6 +481,17 @@ int ChangeDir(char path[])
 
 int ListDirs(char path[])
 {
+    cout << endl;
+    FILE *vfs = fopen(filename, "rb");
+    char dir_name[253] = {0};
+    for(int i = 0; i < 16; ++i) {
+        fseek(vfs, DataBlkPos(wkpath->dir_inode), SEEK_SET);
+        fseek(vfs, DirsPos(i), SEEK_CUR);
+        memset(dir_name, 0, sizeof(dir_name));
+        fread(dir_name, sizeof(char), 252, vfs);
+        cout << " ";
+    }
+    fclose(vfs);
     return 0;
 }
 
