@@ -318,6 +318,7 @@ int PrintWorkPath()
     cout << endl;
     return 0;
 }
+/*
 //获得文件夹的inode,文件路径错误时返回值为-1，是文件而不是文件夹时返回-2
 int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正常的获得文件夹的inode 普通调用时可忽略这一参数
 {
@@ -357,7 +358,7 @@ int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正
         SwitchWorkDir(SonDirStatus);
     return 0;
 }
-
+*/
 //直接查找path[]对应的文件或文件夹，返回inode_id，错误返回-1
 int GetPathInode(char path[], int type_judge = 0) //
 {
@@ -367,11 +368,11 @@ int GetPathInode(char path[], int type_judge = 0) //
     if(path[0] == '/')
         src_inode = 0;
     else if(path[0] == '.') {
-        if(path_len ==2 && path[1] == '.') {
+        if(path[1] == '.' && path[2] == '/') {
             src_inode = GetFatDir();
             SonDirStatus = 2;
         }
-        else if(path_len == 1) {
+        else if(path[1] == '/') {
             src_inode = GetWorkDir();
             SonDirStatus = 1;
         }
@@ -433,10 +434,10 @@ int ChangeDir(char path[])
         return -1;
     }
     SwitchWorkDir(SonDirStatus); */
-    int returnstatus = GetDirPathInode(path, 1);
+    int returnstatus = GetPathInode(path, 1);
     if(returnstatus == -1)
         PathError(path);
-    else if(returnstatus == -2)
+    else if(nodes[returnstatus].i_mode == 1)
         DirError(path);
     return returnstatus;
 }
