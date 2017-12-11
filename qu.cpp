@@ -97,7 +97,7 @@ void ExistedError(char path[])
 
 
 
-int MakeDir(char path[])
+int MakeDir(char path[]) //没写完接着写
 {
     int path_len = (int) strlen(path), divpos = -1, fat_inode = 0;
     char fat_path[input_buffer_length] = {0}, dir_name[253] = {0};
@@ -126,9 +126,11 @@ int MakeDir(char path[])
     sbks.inode_bitmap[new_dir_inode] = 1;
     UpdateInode(new_dir_inode);
     int new_blk_id = find_free_blkbmp();
-    inodes[new_dir_inode].i_blocks[0] = new_blk_id;
+    inodes[new_dir_inode] = _inode(new_dir_inode, 0, 0, fat_inode, new_blk_id);
+    UpdateInode(new_dir_inode);
     sbks.inode_bitmap[new_blk_id] = 1;
     UpdateBlkBmp(new_blk_id);
+    WriteDir(dir_name, new_dir_inode, <#int inode_entry_id#>, <#int inode_dir_id#>)
     return 0;
         
 }
