@@ -1,5 +1,6 @@
 #include "fu.h"
-const char filename[12] = "Filesys.vfs";
+#include "qu.cpp"
+/*const char filename[12] = "Filesys.vfs";
 const int inode_size = 32, datablk_size = 4096, dir_size = 256;
 const int indbmp_size = 4096, blkbmp_size = 4096, inodes_size = inode_size * 4096;
 long DataBlkPos(int x); //返回第x个data_block在磁盘文件中的位置
@@ -12,7 +13,8 @@ int FindPath(char path[], int inode_id);//返回path[]的inode_id路径或-1
 void WriteDir(const char *dir_name, int dir_id, int inode_id);//在inode_id文件夹中的第dir_id个位置建立文件夹联系dir_name
 int UpdateIndBmp(int x);
 int UpdateBlkBmp(int x);
-int UpdateInode(int x); 
+int UpdateInode(int x);
+int GetPathInode(char path[], int type_judge = 0); */
 //注意，WriteDir函数中写入dir_name没有把后面补全'\0' 
 //以上来自qu.cpp 
 
@@ -58,26 +60,33 @@ void write_fileblock_into_file(char str[],int block_id)//在block_id上书写str，警
 int find_free_indbmp(){
 	int i = 0;
 	for (; (i < indbmp_size) && (sbks.inode_bitmap[i] != 0); i++);
-	if (i == 4096)
+	if (i == 4096){
+		printf("All inodes are used\n");
 		return -1;
+	}
 	return i;
 }
 int find_free_blkbmp(){
 	int i = 0;
 	for (; (i < blkbmp_size) && (sbks.block_bitmap[i] != 0); i++);
-	if (i == 4096)
+	if (i == 4096){
+		printf("All blocks are used\n");
 		return -1;
+	}
 	return i;
 }
-int find_free_dir_entry(int inode_id){
-	if (inodes[inode_id].i_mode == 1)
-		return -2;
+int find_free_dir_entry(int inode_id, char path[]){
+	if (inodes[inode_id].i_mode == 1){
+		printf("%s is not a directory\n",path);
+	}
 	int block_id = inodes[inode_id].i_blocks[0]; 
 	_dir_block block1 = get_dirblock(inode_id);//找到block
 	int i = 0;
 	for (; (i<16)&&(block1.dirs[i].name[0] != '\0'); i++);
-	if (i==16)
+	if (i==16){
+		printf("%s is full\n",path);
 		return -1;
+	}
 	return i;
 }
 
@@ -102,36 +111,30 @@ int echo(char path[],int inode_id, char str[])
 			path_up[i] = '\0';
 		}
 	}
-	int upstr_inode_id = FindPath(path_up, inode_id);
+	int upstr_inode_id = GetPathInode(path_up);
 	if (upstr_inode_id==-1){
 		printf("%s No such directory\n",path_up);
 		return -1;
-	}//这里其实重复查找了，完成后可考虑修改FindPath函数 
+	}
 	if (inodes[upstr_inode_id].i_mode == 0){
-		printf("%s is not directory\n",path);
+		printf("%s is not directory\n",path_up);
 		return -1;
 	} 
-	int str_inode_id = FindPath(path, inode_id);
+	int str_inode_id = FindPath(path, upstr_inode_id);
 	if (str_inode_id==-1){
-		int x = find_free_dir_entry(upstr_inode_id);
-		if (x==-1){
-			printf("%s is full\n",path_up);
+		int x = find_free_dir_entry(upstr_inode_id, path_up);
+		if (x < 0){
 			return -1;
-		}
-		if (x==-2){//好像你那边有个函数能做这个事？ 
-			printf("%s is not a directory\n",path_up);
-			return -1;
-		}
+		} 
 		str_inode_id = find_free_indbmp();
-		int str_block_id = find_free_blkbmp();
 		if (str_inode_id==-1){
-			printf("All inodes are used\n");
 			return -1;
 		}
+		int str_block_id = find_free_blkbmp();
 		if (str_block_id==-1){
-			printf("All blocks are used\n");
 			return -1;
 		}
+		char path_name[252] = {0};
 		inodes[str_inode_id].i_id = str_inode_id; 
 		inodes[str_inode_id].i_mode = 1;
 		inodes[str_inode_id].i_blocks[0] = str_block_id;
@@ -147,7 +150,7 @@ int echo(char path[],int inode_id, char str[])
 	return 0;
 }
 
-//将读取path路径的文件 
+//读取path路径的文件 
 int cat(char path[],int inode_id)
 {
 	char path_up[252] = {0};
@@ -168,20 +171,59 @@ int cat(char path[],int inode_id)
 			path_up[i] = '\0';
 		}
 	}
-	int upstr_inode_id = FindPath(path_up, inode_id);
+	int upstr_inode_id = GetPathInode(path_up);
 	if (upstr_inode_id==-1){
 		printf("%s No such directory\n",path_up);
 		return -1;
 	}
 	if (inodes[upstr_inode_id].i_mode == 0){
-		printf("%s is not directory\n",path);
+		printf("%s is not directory\n",path_up);
 		return -1;
-	} //这里也是重复查找 
-	int str_inode_id = FindPath(path, inode_id);
+	}
+	int str_inode_id = FindPath(path, upstr_inode_id);//这里也是重复查找 
 	if (str_inode_id==-1){
 		printf("%s No such file\n",path);
 		return -1;
 	}
 	printf("%s\n",get_fileblock(str_inode_id).data);
+	return 0;
+}
+
+//删除path路径的文件 
+int rm(char path[],int inode_id)
+{
+	char path_up[252] = {0};
+	int UpDirPos = 0;
+	bool UpDir = 0;
+	for (int i = 251; i >= 0; i--){
+		if(path[i] == '/') {
+            UpDir = 1;
+            UpDirPos = i;
+            break;
+        }
+	}
+	if (UpDir){
+		for (int i = UpDirPos - 1; i >= 0; i--){
+			path_up[i] = path[i];
+		}
+		for (int i = UpDirPos; i < 252; i++){
+			path_up[i] = '\0';
+		}
+	}
+	int upstr_inode_id = GetPathInode(path_up);
+	if (upstr_inode_id==-1){
+		printf("%s No such directory\n",path_up);
+		return -1;
+	}
+	if (inodes[upstr_inode_id].i_mode == 0){
+		printf("%s is not directory\n",path_up);
+		return -1;
+	}
+	int str_inode_id = FindPath(path, upstr_inode_id);
+	if (str_inode_id==-1){
+		printf("%s No such file\n",path);
+		return -1;
+	}
+	
 	return 0;
 }
