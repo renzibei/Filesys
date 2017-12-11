@@ -15,5 +15,9 @@ struct workdir_pathnode{
 int InitDisk();
 int WaitMessage();
 bool IsExit(int);
-
+int GetWorkDir();
+int GetPathInode(char path[], int type_judge = 0);
+int FindPath(char path[], int inode_id,int type_find = 0);
+void PathError(char path[]);
+void PathError(char path[]);
 #endif

@@ -18,6 +18,16 @@ struct _inode {
     //...
     int i_blocks[1]; //都是从0开始数
     char i_place_holder[PLACEHOLDER]; //占位符
+    _inode(int _i_id, int _i_imode, int _i_i_fs, int _fat_id, int _blocks)
+    {
+        i_id = _i_id;
+        i_mode = _i_imode;
+        i_file_size = _i_i_fs;
+        fat_id = _fat_id;
+        i_blocks = blocks;
+        i_place_holder = i_ph;
+        
+    }
 };
 
 //文件对应数据块

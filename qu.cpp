@@ -63,7 +63,7 @@ int UpdateInode(int x)
 {
     FILE *vfs = fopen(filename,"rb+");
     fseek(vfs, InodesPos(x), SEEK_SET);
-    fwrite(&inodes[x], sizeof(_inode), 1, vfs)
+    fwrite(&inodes[x], sizeof(_inode), 1, vfs);
     /*
     fwrite(&inodes[x].i_id,sizeof(int), 3, vfs);
     fwrite(&inodes[x].i_blocks,sizeof(int),1,vfs);
@@ -72,15 +72,64 @@ int UpdateInode(int x)
     return 0;
 }
 
+int FindSonPath(char sonpath[],int inode_id, int &relasondir)
+{
+    FILE *vfs = fopen(filename, "rb");
+    int dst_inode_id = -1;
+    char pathname[252] = {0};
+    for(int i = 0; i < 16; ++i) {
+        fseek(vfs,DataBlkPos(inodes[inode_id].i_blocks[0]),SEEK_SET);
+        fseek(vfs,DirsPos(i),SEEK_CUR);
+        fread(pathname, sizeof(char), 252, vfs);
+        if(strcmp(sonpath, pathname) == 0) {
+            fread(&dst_inode_id, sizeof(int), 1, vfs);
+            return dst_inode_id;
+        }
+    }
+    fclose(vfs);
+    return -1;
+}
+
+void ExistedError(char path[])
+{
+    cout << endl << path << " already existed." << endl;
+}
+
+
+
 int MakeDir(char path[])
 {
-    int path_len = (int) strlen(path), divpos = -1;
+    int path_len = (int) strlen(path), divpos = -1, fat_inode = 0;
+    char fat_path[input_buffer_length] = {0}, dir_name[253] = {0};
     for(int i = path[path_len-1]; i > -1; --i)
         if(path[i] == '/') {
             divpos = i;
             break;
         }
     if(divpos == -1)
+        fat_inode = GetWorkDir();
+    else {
+        strncpy(fat_path, path, divpos + 1);
+        fat_inode = GetPathInode(fat_path);
+        if(fat_inode == -1) {
+            PathError(fat_path);
+            return -1;
+        }
+    }
+    int rela_id = FindPath(dir_name, fat_inode);
+    FindSonPath(dir_name, fat_inode, rela_id);
+    if(rela_id != -1) {
+        ExistedError(path);
+        return -2;
+    }
+    int new_dir_inode = find_free_blkbmp();
+    sbks.inode_bitmap[new_dir_inode] = 1;
+    UpdateInode(new_dir_inode);
+    int new_blk_id = find_free_blkbmp();
+    inodes[new_dir_inode].i_blocks[0] = new_blk_id;
+    sbks.inode_bitmap[new_blk_id] = 1;
+    UpdateBlkBmp(new_blk_id);
+    return 0;
         
 }
 
@@ -158,23 +207,7 @@ int InitDisk()
     return 1;
 }
 
-int FindSonPath(char sonpath[],int inode_id, int &relasondir)
-{
-    FILE *vfs = fopen(filename, "rb");
-    int dst_inode_id = -1;
-    char pathname[252] = {0};
-    for(int i = 0; i < 16; ++i) {
-        fseek(vfs,DataBlkPos(inodes[inode_id].i_blocks[0]),SEEK_SET);
-        fseek(vfs,DirsPos(i),SEEK_CUR);
-        fread(pathname, sizeof(char), 252, vfs);
-        if(strcmp(sonpath, pathname) == 0) {
-            fread(&dst_inode_id, sizeof(int), 1, vfs);
-            return dst_inode_id;
-        }
-    }
-    fclose(vfs);
-    return -1;
-}
+
 
 void GetDirName(int inode_id, int rela_son_id, char* dir_name)
 {
@@ -221,7 +254,7 @@ void NewWorkDirNode(int far_inode_id,int son_inode_id,int rela_son_id = 0)
 
 
 
-int FindPath(char path[], int inode_id,int type_find = 0)
+int FindPath(char path[], int inode_id,int type_find)
 {
     int path_len = (int) strlen(path);
     char SonDirPath[252] = {0};
@@ -248,7 +281,7 @@ int FindPath(char path[], int inode_id,int type_find = 0)
         return -1;
     if(type_find == 1)
         NewWorkDirNode(inode_id, son_inode_id, relasondir);
-    return FindPath(path + AnoDirPos + 1, son_inode_id);
+    return FindPath(path + AnoDirPos + 1, son_inode_id, type_find);
 }
 
 
@@ -267,7 +300,7 @@ void FreeDirPath(workdir_pathnode *tempnode)
 void PathError(char path[])
 {
     FreeDirPath(temphead);
-    cout << path << " " << "No such file or directory" << endl;
+    cout << endl << path << " " << "No such file or directory" << endl;
     
     //..
 }
@@ -275,7 +308,7 @@ void PathError(char path[])
 void DirError(char path[])
 {
     FreeDirPath(temphead);
-    cout << path << " " << "is not a directory." << endl;
+    cout << endl << path << " " << "is not a directory." << endl;
 }
 
 int GetWorkDir()
@@ -393,9 +426,10 @@ int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正
 }
 */
 //直接查找path[]对应的文件或文件夹，返回inode_id，错误返回-1
-int GetPathInode(char path[], int type_judge = 0) // 要改改
+int GetPathInode(char path[], int type_judge)
 {
-    int path_len = (int) strlen(path), nextdirpos = 0;
+    int path_len = (int) strlen(path);
+    int nextdirpos = 0;
     int src_inode = 0;
     int SonDirStatus = 0;
     if(path[0] == '/') {
