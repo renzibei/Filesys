@@ -94,6 +94,7 @@ int find_free_dir_entry(int inode_id, char path[]){
 int echo(char path[],int inode_id, char str[])
 {
 	char path_up[252] = {0};
+	char path_name[252] = {0};
 	int UpDirPos = 0;
 	bool UpDir = 0;
 	for (int i = 251; i >= 0; i--){
@@ -106,9 +107,11 @@ int echo(char path[],int inode_id, char str[])
 	if (UpDir){
 		for (int i = UpDirPos - 1; i >= 0; i--){
 			path_up[i] = path[i];
+			str_name[251-i] = '\0';
 		}
 		for (int i = UpDirPos; i < 252; i++){
 			path_up[i] = '\0';
+			str_name[i-UpDirPos] = path[i];
 		}
 	}
 	int upstr_inode_id = GetPathInode(path_up);
@@ -135,6 +138,7 @@ int echo(char path[],int inode_id, char str[])
 			return -1;
 		}
 		char path_name[252] = {0};
+		WriteDir(&str_name, x, str_inode_id);
 		inodes[str_inode_id].i_id = str_inode_id; 
 		inodes[str_inode_id].i_mode = 1;
 		inodes[str_inode_id].i_blocks[0] = str_block_id;
