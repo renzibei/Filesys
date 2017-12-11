@@ -399,7 +399,7 @@ int GetPathInode(char path[], int type_judge = 0) // 要改改
     int src_inode = 0;
     int SonDirStatus = 0;
     if(path[0] == '/') {
-            src_inode = 0;
+        src_inode = 0;
         nextdirpos = 1;
     }
     else if(path[0] == '.' && path_len > 1) {
