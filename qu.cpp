@@ -220,6 +220,8 @@ int FindPath(char path[], int inode_id,int type_find = 0)
     return FindPath(path + AnoDirPos +1, son_inode_id);
 }
 
+
+
 void FreeDirPath(workdir_pathnode *tempnode)
 {
     for(workdir_pathnode *tpdir = tempnode; tpdir != NULL; tpdir = tempnode) {
@@ -354,6 +356,46 @@ int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正
     if(type_judge == 1)
         SwitchWorkDir(SonDirStatus);
     return 0;
+}
+
+//直接查找path[]对应的文件或文件夹，返回inode_id，错误返回-1
+int GetPathInode(char path[], int type_judge = 0) //
+{
+    int path_len = (int) strlen(path);
+    int src_inode = 0;
+    int SonDirStatus = 0;
+    if(path[0] == '/')
+        src_inode = 0;
+    else if(path[0] == '.') {
+        if(path_len ==2 && path[1] == '.') {
+            src_inode = GetFatDir();
+            SonDirStatus = 2;
+        }
+        else if(path_len == 1) {
+            src_inode = GetWorkDir();
+            SonDirStatus = 1;
+        }
+    }
+    else src_inode = -1;
+    if(src_inode == -1) {
+        //PathError(path);
+        return -1;
+    }
+    if(type_judge == 1)
+        InitTempWD();
+    int dst_inode_id = FindPath(path, src_inode);
+    if(dst_inode_id == -1) {
+        // PathError(path);
+        return -1;
+    }
+    /*
+    if(inodes[dst_inode_id].i_mode == 1) {
+        //DirError(path)
+        return -2;
+    }*/
+    if(type_judge == 1 && inodes[dst_inode_id].i_mode == 0)
+        SwitchWorkDir(SonDirStatus);
+    return dst_inode_id;
 }
 
 int ChangeDir(char path[])
