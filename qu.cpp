@@ -46,15 +46,16 @@ int UpdateBlkBmp(int x)
     return 0;
 }
 
-void WriteDir(const char *dir_name, int dir_id, int inode_id)
+void WriteDir(const char *dir_name, int dir_id, int inode_a_id, int inode_b_id)
 {
     FILE *vfs = fopen(filename,"rb+");
-    fseek(vfs,DataBlkPos(inode_id),SEEK_SET);
+    fseek(vfs,DataBlkPos(inode_a_id),SEEK_SET);
     fseek(vfs,DirsPos(dir_id),SEEK_CUR);
     fwrite(dir_name,sizeof(char), strlen(dir_name), vfs);
-    fseek(vfs,DataBlkPos(inode_id),SEEK_SET);
+    fseek(vfs,DataBlkPos(inode_a_id),SEEK_SET);
+    fseek(vfs,DirsPos(dir_id),SEEK_CUR);
     fseek(vfs,252,SEEK_CUR);
-    fwrite(&inode_id, sizeof(int), 1, vfs);
+    fwrite(&inode_b_id, sizeof(int), 1, vfs);
     fclose(vfs);
 }
 
@@ -92,8 +93,8 @@ void MakeHome()
     inodes[0].i_mode = 0;
     inodes[0].i_blocks[0] = 0;
     UpdateInode(0);
-    WriteDir(".",0,0);
-    WriteDir("..",1,0);
+    WriteDir(".",0,0,0);
+    WriteDir("..",1,0,0);
     
     
 }
@@ -208,6 +209,7 @@ int FindPath(char path[], int inode_id,int type_find = 0)
             break;
         }
     if(!AnotherDir) {
+        if(path_len == 0)
         son_inode_id = FindSonPath(path, inode_id, relasondir);
         return son_inode_id;
     }
@@ -222,7 +224,7 @@ int FindPath(char path[], int inode_id,int type_find = 0)
     return FindPath(path + AnoDirPos + 1, son_inode_id);
 }
 
-int FindFileInDir
+
 
 
 
@@ -366,11 +368,13 @@ int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正
 //直接查找path[]对应的文件或文件夹，返回inode_id，错误返回-1
 int GetPathInode(char path[], int type_judge = 0) // 要改改
 {
-    int path_len = (int) strlen(path)， nextdirpos = 0;
+    int path_len = (int) strlen(path), nextdirpos = 0;
     int src_inode = 0;
     int SonDirStatus = 0;
-    if(path[0] == '/')
-        src_inode = 0, nextdirpos = 1;
+    if(path[0] == '/') {
+            src_inode = 0;
+        nextdirpos = 1;
+    }
     else if(path[0] == '.' && path_len > 1) {
         if(path[1] == '/') {
             src_inode = GetWorkDir();
