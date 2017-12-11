@@ -199,6 +199,7 @@ int FindPath(char path[], int inode_id,int type_find = 0)
     int path_len = (int) strlen(path);
     char SonDirPath[252] = {0};
     int AnoDirPos = 0;
+    int son_inode_id = -1, relasondir = -1;
     bool AnotherDir = 0;
     for(int i = 0; i < path_len; ++i)
         if(path[i] == '/') {
@@ -206,11 +207,12 @@ int FindPath(char path[], int inode_id,int type_find = 0)
             AnoDirPos = i;
             break;
         }
-    if(!AnotherDir)
-        return inode_id;
+    if(!AnotherDir) {
+        son_inode_id = FindSonPath(path, inode_id, relasondir);
+        return son_inode_id;
+    }
     strncpy(SonDirPath, path, AnoDirPos + 1);
-    int relasondir = -1;
-    int son_inode_id = FindSonPath(SonDirPath, inode_id, relasondir);
+    son_inode_id = FindSonPath(SonDirPath, inode_id, relasondir);
     if(son_inode_id == -1)
         return -1;
     if(type_find == 1)
