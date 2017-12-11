@@ -46,16 +46,16 @@ int UpdateBlkBmp(int x)
     return 0;
 }
 
-void WriteDir(const char *dir_name, int dir_id, int inode_a_id, int inode_b_id)
+void WriteDir(const char *dir_name, int dir_id, int inode_entry_id, int inode_dir_id)
 {
     FILE *vfs = fopen(filename,"rb+");
-    fseek(vfs,DataBlkPos(inode_a_id),SEEK_SET);
+    fseek(vfs,DataBlkPos(inode_entry_id),SEEK_SET);
     fseek(vfs,DirsPos(dir_id),SEEK_CUR);
     fwrite(dir_name,sizeof(char), strlen(dir_name), vfs);
-    fseek(vfs,DataBlkPos(inode_a_id),SEEK_SET);
+    fseek(vfs,DataBlkPos(inode_entry_id),SEEK_SET);
     fseek(vfs,DirsPos(dir_id),SEEK_CUR);
     fseek(vfs,252,SEEK_CUR);
-    fwrite(&inode_b_id, sizeof(int), 1, vfs);
+    fwrite(&inode_dir_id, sizeof(int), 1, vfs);
     fclose(vfs);
 }
 
