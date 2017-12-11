@@ -200,7 +200,7 @@ int FindPath(char path[], int inode_id,int type_find = 0)
     char SonDirPath[252] = {0};
     int AnoDirPos = 0;
     bool AnotherDir = 0;
-    for(int i = 1; i < path_len; ++i)
+    for(int i = 0; i < path_len; ++i)
         if(path[i] == '/') {
             AnotherDir = 1;
             AnoDirPos = i;
@@ -208,7 +208,7 @@ int FindPath(char path[], int inode_id,int type_find = 0)
         }
     if(!AnotherDir)
         return inode_id;
-    strncpy(SonDirPath, path + 1, AnoDirPos);
+    strncpy(SonDirPath, path, AnoDirPos + 1);
     int relasondir = -1;
     int son_inode_id = FindSonPath(SonDirPath, inode_id, relasondir);
     if(son_inode_id == -1)
@@ -217,8 +217,10 @@ int FindPath(char path[], int inode_id,int type_find = 0)
         NewWorkDirNode(inode_id, son_inode_id, relasondir);
     //memset(SonDirPath, 0, sizeof(SonDirPath));
    // strcpy(SonDirPath, path + AnoDirPos + 1);
-    return FindPath(path + AnoDirPos +1, son_inode_id);
+    return FindPath(path + AnoDirPos + 1, son_inode_id);
 }
+
+int FindFileInDir
 
 
 
@@ -360,21 +362,23 @@ int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正
 }
 */
 //直接查找path[]对应的文件或文件夹，返回inode_id，错误返回-1
-int GetPathInode(char path[], int type_judge = 0) //
+int GetPathInode(char path[], int type_judge = 0) // 要改改
 {
-    int path_len = (int) strlen(path);
+    int path_len = (int) strlen(path)， nextdirpos = 0;
     int src_inode = 0;
     int SonDirStatus = 0;
     if(path[0] == '/')
-        src_inode = 0;
+        src_inode = 0, nextdirpos = 1;
     else if(path[0] == '.' && path_len > 1) {
         if(path[1] == '/') {
             src_inode = GetWorkDir();
             SonDirStatus = 1;
+            nextdirpos = 2;
         }
         else if(path_len > 2 && path[1] == '.' && path[2] == '/') {
             src_inode = GetFatDir();
             SonDirStatus = 2;
+            nextdirpos = 3;
         }
         
     }
@@ -385,7 +389,7 @@ int GetPathInode(char path[], int type_judge = 0) //
     }
     if(type_judge == 1)
         InitTempWD();
-    int dst_inode_id = FindPath(path, src_inode);
+    int dst_inode_id = FindPath(path + nextdirpos, src_inode);
     if(dst_inode_id == -1) {
         // PathError(path);
         return -1;
