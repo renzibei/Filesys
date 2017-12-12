@@ -88,35 +88,18 @@ int find_free_dir_entry(int inode_id, char path[]){
 	}
 	return i;
 }
-int find_position_dir_entry(int inode_id, char dir_name[252],char uppath[]){
-	if (inodes[inode_id].i_mode == 1){
-		printf("%s is not a directory\n",uppath);
-		return -1;
-	}
-	int block_id = inodes[inode_id].i_blocks[0]; 
-	_dir_block block1 = get_dirblock(inode_id);//找到block
+int find_position_dir_entry(int path_inode_id){//未加path判断，即需自行判断path存在且uppath为文件夹
+	int uppath_inode_id = inodes[path_inode_id].fat_id;
+	_dir_block block1 = get_dirblock(uppath_inode_id);//找到block
 	int i = 0;
-	for (; i<16; i++){
-		bool Same = true;
-		for(int j = 0; j<252;j++){
-			if (block1.dirs[i].name[j] != dir_name[j]){
-				Same = false;
-				break;
-			}
-		}
-		if (Same){
-			break;
-		}
-	}
+	for (; (i < 16) && (block1.dirs[i].inode_id == path_inode_id); i++);
 	if (i==16){
-		printf("%s/%s No such file or directory\n", uppath, dir_name);
 		return -1;
 	}
 	return i;
 }
 
-//将str在写入path路径的文件 
-int echo(char path[], char str[])
+int echo(char path[], char str[])//将str在写入path路径的文件 
 {
 	char path_up[252] = {0};//上一级目录
 	char str_name[252] = {0};//文件名
@@ -141,12 +124,12 @@ int echo(char path[], char str[])
 	}
 
 	else {//意外情况
-		printf("%s No such file or directory\n", path);
+		printf("%s No such file or directory\n", path_up);
 		return -1;
 	}
 	int upstr_inode_id = GetPathInode(path_up);
-	if (upstr_inode_id==-1){
-		printf("%s No such directory\n",path_up);
+	if (upstr_inode_id<0){
+		printf("%s No such file or directory\n", path_up);
 		return -1;
 	}
 	if (inodes[upstr_inode_id].i_mode == 0){
@@ -155,26 +138,23 @@ int echo(char path[], char str[])
 	}
 
 	int str_inode_id = FindPath(path, upstr_inode_id);//若不存在，则创建基本信息
-	if (str_inode_id==-1){
+	if (str_inode_id<0){
 		int str_position = find_free_dir_entry(upstr_inode_id, path_up);
 		if (str_position < 0){
 			return -1;
 		} 
 		str_inode_id = find_free_indbmp();
-		if (str_inode_id==-1){
+		if (str_inode_id<0){
 			return -1;
 		}
 		int str_block_id = find_free_blkbmp();
-		if (str_block_id==-1){
+		if (str_block_id<0){
 			return -1;
 		}//以上对应磁盘空间已满的情况
 
 		char path_name[252] = {0};
 		WriteDir(str_name, str_position, upstr_inode_id, str_inode_id);
-		inodes[str_inode_id].i_id = str_inode_id; 
-		inodes[str_inode_id].i_mode = 1;
-		inodes[str_inode_id].i_blocks[0] = str_block_id;
-		inodes[str_inode_id].i_file_size = sizeof(str);
+		inodes[str_inode_id] = _inode(str_inode_id, 1, sizeof(str), upstr_inode_id, str_block_id);
 		//不必清除inode/block，因为它们本来就是空的 
 		sbks.inode_bitmap[str_inode_id] = 1;
 		sbks.block_bitmap[str_block_id] = 1;
@@ -195,12 +175,11 @@ int echo(char path[], char str[])
 	write_fileblock_into_file(full_str,inodes[str_inode_id].i_blocks[0]);//写入str
 	return 0;
 }
-
-//读取path路径的文件 
-int cat(char path[])
+ 
+int cat(char path[])//读取path路径的文件
 {
 	int str_inode_id = GetPathInode(path); 
-	if (str_inode_id==-1){
+	if (str_inode_id<0){
 		printf("%s No such file or directory\n",path);
 		return -1;
 	}//路径不存在
@@ -212,16 +191,47 @@ int cat(char path[])
 	return 0;
 }
 
-//删除path路径的文件 
-int rm(char path[])
+int delete_directory(int path_inode_id)//删除某inode_id的文件，path_inode_id<0代表不存在，返回-2；若是文件（而非文件夹）返回-1
 {
-	int path_inode_id = GetPathInode(path);
-	if (path_inode_id == -1) {
-		printf("%s No such file or directory\n", path);
+	if (path_inode_id < 0) {
+		return -2;
+	}
+	if (inodes[path_inode_id].i_mode == 1) {
 		return -1;
-	}//路径不存在
+	}
+	_dir_block dirblock = get_dirblock(dir_inode_id);
+	for (int i = 3; i < 16; i++) {
+		char down_name[252] = dirblock.dirs[i].name;
+		bool NotEmpty = false;
+		for (int j = 0; j < 252; j++) {
+			if (down_name[j] != 0) {
+				NotEmpty = true;
+				break;
+			}
+		}
+		if (NotEmpty) {
+			int down_inode_id = dirblock.dirs[i].inode_id;
+			int down_mode = inodes[down_inode_id].i_mode;
+			if (down_mode == 1) {
+				delete_file(down_inode_id);
+			}
+			else {
+				delete_directory(down_inode_id);
+			}
+		}
+	}
+
+	char str[252] = { 0 };
+	for (int i = 0; i < 252; i++) {
+		str[i] = '\0';
+	}//current here 12/12 11:38
+	WriteDir(str, 1, 0, path_inode_id);
+	WriteDir()
+}
+
+int delete_file(int path_inode_id)//删除某inode_id的文件，已加判断path是否为文件夹，需自行判断path存在且uppath为文件夹
+{
 	if (inodes[path_inode_id].i_mode == 0) {
-		printf("%s is not a file\n", path);
 		return -1;
 	}//路径为文件夹
 
@@ -232,20 +242,45 @@ int rm(char path[])
 	sbks.inode_bitmap[path_block_id] = 0;
 	UpdateBlkBmp(path_inode_id);//重置path对应的block_bitmap
 
-	inodes[path_inode_id].i_id = 0;
-	inodes[path_inode_id].i_mode = 0;
-	inodes[path_inode_id].i_blocks[0] = 0;
-	inodes[path_inode_id].i_file_size = 0;
-	//inodes[path_inode_id].i_place_holder = { 0 };
-	UpdateInode(path_inode_id);//删除path的inode
-
 	char str[252] = { 0 };
 	for (int i = 0; i < 252; i++) {
 		str[i] = '\0';
 	}
-	int dir_id = find_position_dir_entry(path_inode_id, path_name, path_up);
 	write_fileblock_into_file(str, path_block_id);//删除path的block
 
+	int uppath_inode_id = inodes[path_block_id].fat_id;
+	int dir_id = find_position_dir_entry(path_inode_id);
 	WriteDir(str, dir_id, 0, uppath_inode_id);//删除path对应的dir_entry
+
+	inodes[path_inode_id] = _inode(0, 0, 0, 0, 0);
+	UpdateInode(path_inode_id);//删除path的inode
 	return 0;
+}
+
+int rm(char path[])//删除path路径的文件 
+{
+	int path_inode_id = GetPathInode(path);
+	if (path_inode_id < 0) {
+		printf("%s No such file or directory\n", path);
+		return -1;
+	}
+	int i = delete_file(path_inode_id);//这里自然path存在，uppath存在且是文件夹
+	if (i < 0) {
+		printf("%s is not a file\n", path);
+	}
+	return i;
+}
+
+int rmdir(char path[]);//删除path路径的文件夹
+{
+	int path_inode_id = GetPathInode(path);
+	int i = delete_directory(path_inode_id);
+	if (i < 0) {
+		if (i == -2)
+			printf("%s No such file or directory\n", path);
+		if (i == -1)
+			printf("%s is not a directory\n", path);
+		return -1;
+	}
+	return i;
 }
