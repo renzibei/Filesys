@@ -4,7 +4,7 @@
 const char filename[12] = "Filesys.vfs";
 const int inode_size = 32, datablk_size = 4096, dir_size = 256;
 const int indbmp_size = 4096, blkbmp_size = 4096, inodes_size = inode_size * 4096;
-
+char inputbuffer[input_buffer_length];
 
 workdir_pathnode *pathhead = NULL;
 workdir_pathnode *wkpath   = NULL;
