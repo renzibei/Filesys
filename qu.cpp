@@ -231,6 +231,10 @@ void GetDirName(int inode_id, int rela_son_id, char* dir_name)
 
 int GetSelfName(int inode_id, char* selfname)
 {
+    if(inode_id == 0) {
+        memset(selfname, 0, sizeof(selfname));
+        return 0;
+    }
     FILE *vfs = fopen(filename, "rb");
     int tempid = -1;
     for(int i = 0; i < 16; ++i) {
