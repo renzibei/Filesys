@@ -88,9 +88,9 @@ int FindSonPath(char sonpath[],int inode_id, int &relasondir)
         if(strcmp(sonpath, pathname) == 0) {
             fread(&dst_inode_id, sizeof(int), 1, vfs);
             return dst_inode_id;
-        }
+		}
         fread(&temp_inode_id, sizeof(int), 1, vfs);
-        if(temp_inode_id == 0 && !existedfreeentry) {
+        if(temp_inode_id == 0 && !existedfreeentry && pathname[0] == 0) {
             existedfreeentry = 1;
             relasondir = i;
         }
@@ -112,7 +112,7 @@ int MakeDir(char path[]) //没写完接着写
 {
     int path_len = (int) strlen(path), divpos = -1, fat_inode = 0;
     char fat_path[input_buffer_length] = {0}, dir_name[253] = {0};
-    for(int i = path[path_len-1]; i > -1; --i)
+    for(int i = path_len-1; i > -1; --i)
         if(path[i] == '/') {
             divpos = i;
             break;
@@ -127,6 +127,7 @@ int MakeDir(char path[]) //没写完接着写
             return -1;
         }
     }
+	strncpy(dir_name, path + divpos + 1, path_len - divpos -1);
     int rela_id = -1;
     if(FindSonPath(dir_name, fat_inode, rela_id) != -1) {
         ExistedError(path);
@@ -197,7 +198,7 @@ int InitBuffer()
 void InitWorkPath()
 {
     pathtail = new workdir_pathnode;
-    pathtail->dir_inode = -1;
+    pathtail->dir_inode = 0;
     pathhead = new workdir_pathnode;
     pathhead->dir_inode = 0;
     memset(pathhead->dirname, 0, sizeof(pathhead->dirname));
@@ -214,7 +215,6 @@ int InitDisk()
     FILE *vfs = fopen(filename,"rb");
     if(vfs == NULL) {
         FormatDisk();
-        return 0;
     }
 	else {
 		fclose(vfs);
@@ -293,9 +293,11 @@ int FindPath(char path[], int inode_id,int type_find)
     if(!AnotherDir) {
         if(path_len == 0)
             son_inode_id = inode_id;
-        if(type_find == 1)
-            NewWorkDirNode(inode_id, son_inode_id, relasondir);
+       // if(type_find == 1)
+         //   NewWorkDirNode(inode_id, son_inode_id, relasondir);
         son_inode_id = FindSonPath(path, inode_id, relasondir);
+		if (type_find == 1)
+			NewWorkDirNode(inode_id, son_inode_id, relasondir);
         return son_inode_id;
     }
     strncpy(SonDirPath, path, AnoDirPos + 1);
@@ -341,7 +343,7 @@ int GetWorkDir()
 
 int GetFatDir()
 {
-    return wkpath->prevdir->dir_inode;
+    return inodes[wkpath->dir_inode].fat_id;
 }
 
 int SwitchWorkDir(int status)
@@ -366,9 +368,12 @@ int SwitchWorkDir(int status)
             break;
         case 2:
         {
-            wkpath->prevdir->nextdir = temphead->nextdir;
+            if(wkpath->prevdir)
+				wkpath->prevdir->nextdir = temphead->nextdir;
+			else pathhead->nextdir = temphead->nextdir;
             temphead->nextdir->prevdir = wkpath->prevdir;
-            delete wkpath;
+            if(wkpath != pathhead)
+				delete wkpath;
             delete pathtail;
             delete temphead;
             wkpath = tempwd;
@@ -473,7 +478,7 @@ int GetPathInode(char path[], int type_judge)
     else {
         src_inode = GetWorkDir();
         SonDirStatus = 1;
-        nextdirpos = 2;
+        nextdirpos = 0;
     }
     if(src_inode == -1) {
         //PathError(path);
@@ -481,7 +486,7 @@ int GetPathInode(char path[], int type_judge)
     }
     if(type_judge == 1)
         InitTempWD();
-    int dst_inode_id = FindPath(path + nextdirpos, src_inode);
+    int dst_inode_id = FindPath(path + nextdirpos, src_inode, type_judge);
     if(dst_inode_id == -1) {
         // PathError(path);
         return -1;
@@ -496,7 +501,7 @@ int GetPathInode(char path[], int type_judge)
     return dst_inode_id;
 }
 
-int ChangeDir(char path[])
+int ChangeDir(char *path)
 {
     /*
     int path_len = (int) strlen(path);
@@ -580,7 +585,8 @@ int WaitMessage()
 {
     cout << ">> " ;
     memset(inputbuffer, 0, sizeof(inputbuffer));
-    cin >> inputbuffer;
+   // cin >> inputbuffer;
+	cin.getline(inputbuffer, input_buffer_length);
     //cout << endl;
     char inputcontent[input_buffer_length] = {0};
     int inputlen = (int) strlen(inputbuffer), echopos = -1;
