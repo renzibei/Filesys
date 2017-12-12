@@ -193,7 +193,7 @@ int InitBuffer()
     return 0;
 }
 
-void InitWorPath()
+void InitWorkPath()
 {
     pathtail = new workdir_pathnode;
     pathtail->dir_inode = -1;
@@ -217,6 +217,7 @@ int InitDisk()
         return 0;
     }
     else InitBuffer();
+    InitWorkPath();
     return 1;
 }
 
