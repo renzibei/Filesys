@@ -15,9 +15,7 @@
 #include <cstdio>
 #include <cstring>
 
-#ifndef input_buffer_length
-#define input_buffer_length 4096
-#endif
+
 
 extern _inode inodes[4096];
 extern _super_block sbks;

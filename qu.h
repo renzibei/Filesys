@@ -12,6 +12,9 @@ struct workdir_pathnode{
     workdir_pathnode *prevdir;
 };
 
+#ifndef input_buffer_length
+#define input_buffer_length 4096
+#endif
 extern char inputbuffer[input_buffer_length];
 
 int InitDisk();
