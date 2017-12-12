@@ -213,11 +213,13 @@ int InitDisk()
 {
     FILE *vfs = fopen(filename,"rb");
     if(vfs == NULL) {
-        fclose(vfs);
         FormatDisk();
         return 0;
     }
-    else InitBuffer();
+	else {
+		fclose(vfs);
+		InitBuffer();
+	}
     InitWorkPath();
     return 1;
 }
@@ -399,7 +401,7 @@ void InitTempWD()
 
 int PrintWorkPath()
 {
-    for(workdir_pathnode* itdir = pathhead; itdir != NULL; itdir = itdir->nextdir)
+    for(workdir_pathnode* itdir = pathhead; itdir->nextdir != NULL; itdir = itdir->nextdir)
         cout << itdir->dirname << '/';
     cout << endl;
     return 0;
@@ -579,7 +581,7 @@ int WaitMessage()
     cout << ">> " ;
     memset(inputbuffer, 0, sizeof(inputbuffer));
     cin >> inputbuffer;
-    cout << endl;
+    //cout << endl;
     char inputcontent[input_buffer_length] = {0};
     int inputlen = (int) strlen(inputbuffer), echopos = -1;
     switch (inputbuffer[0]) {
