@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "fu.h"
 /*const char filename[12] = "Filesys.vfs";
 const int inode_size = 32, datablk_size = 4096, dir_size = 256;
