@@ -46,16 +46,16 @@ int UpdateBlkBmp(int x)
     return 0;
 }
 
-void WriteDir(const char *dir_name, int dir_id, int inode_entry_id, int inode_dir_id)
+void WriteDir(const char *dir_name, int relative_dir_entry_id, int dir_block_id, int son_dir_id)
 {
     FILE *vfs = fopen(filename,"rb+");
-    fseek(vfs,DataBlkPos(inode_entry_id),SEEK_SET);
-    fseek(vfs,DirsPos(dir_id),SEEK_CUR);
+    fseek(vfs,DataBlkPos(dir_block_id),SEEK_SET);
+    fseek(vfs,DirsPos(relative_dir_entry_id),SEEK_CUR);
     fwrite(dir_name,sizeof(char), strlen(dir_name), vfs);
-    fseek(vfs,DataBlkPos(inode_entry_id),SEEK_SET);
-    fseek(vfs,DirsPos(dir_id),SEEK_CUR);
+    fseek(vfs,DataBlkPos(dir_block_id),SEEK_SET);
+    fseek(vfs,DirsPos(relative_dir_entry_id),SEEK_CUR);
     fseek(vfs,252,SEEK_CUR);
-    fwrite(&inode_dir_id, sizeof(int), 1, vfs);
+    fwrite(&son_dir_id, sizeof(int), 1, vfs);
     fclose(vfs);
 }
 
@@ -75,7 +75,8 @@ int UpdateInode(int x)
 int FindSonPath(char sonpath[],int inode_id, int &relasondir)
 {
     FILE *vfs = fopen(filename, "rb");
-    int dst_inode_id = -1;
+    int dst_inode_id = -1, temp_inode_id = -1;
+    bool existedfreeentry = 0;
     char pathname[252] = {0};
     for(int i = 0; i < 16; ++i) {
         fseek(vfs,DataBlkPos(inodes[inode_id].i_blocks[0]),SEEK_SET);
@@ -85,14 +86,21 @@ int FindSonPath(char sonpath[],int inode_id, int &relasondir)
             fread(&dst_inode_id, sizeof(int), 1, vfs);
             return dst_inode_id;
         }
+        fread(&temp_inode_id, sizeof(int), 1, vfs);
+        if(temp_inode_id == 0 && !existedfreeentry) {
+            existedfreeentry = 1;
+            relasondir = i;
+        }
     }
     fclose(vfs);
+    if(!existedfreeentry)
+        relasondir = -1;
     return -1;
 }
 
 void ExistedError(char path[])
 {
-    cout << endl << path << " already existed." << endl;
+    cout << path << " already existed." << endl;
 }
 
 
@@ -116,11 +124,14 @@ int MakeDir(char path[]) //没写完接着写
             return -1;
         }
     }
-    int rela_id = FindPath(dir_name, fat_inode);
-    FindSonPath(dir_name, fat_inode, rela_id);
-    if(rela_id != -1) {
+    int rela_id = -1;
+    if(FindSonPath(dir_name, fat_inode, rela_id) != -1) {
         ExistedError(path);
         return -2;
+    }
+    if(rela_id == -1) {
+        cout << "The Directory is full!" << endl;
+        return -3;
     }
     int new_dir_inode = find_free_blkbmp();
     sbks.inode_bitmap[new_dir_inode] = 1;
@@ -130,7 +141,9 @@ int MakeDir(char path[]) //没写完接着写
     UpdateInode(new_dir_inode);
     sbks.inode_bitmap[new_blk_id] = 1;
     UpdateBlkBmp(new_blk_id);
-    WriteDir(dir_name, new_dir_inode, <#int inode_entry_id#>, <#int inode_dir_id#>)
+    WriteDir(dir_name, rela_id, fat_inode, new_blk_id);
+    WriteDir(".", 0, new_blk_id, new_blk_id);
+    WriteDir("..", 1, new_blk_id, fat_inode);
     return 0;
         
 }
@@ -302,7 +315,7 @@ void FreeDirPath(workdir_pathnode *tempnode)
 void PathError(char path[])
 {
     FreeDirPath(temphead);
-    cout << endl << path << " " << "No such file or directory" << endl;
+    cout << path << " " << "No such file or directory" << endl;
     
     //..
 }
@@ -310,7 +323,7 @@ void PathError(char path[])
 void DirError(char path[])
 {
     FreeDirPath(temphead);
-    cout << endl << path << " " << "is not a directory." << endl;
+    cout << path << " " << "is not a directory." << endl;
 }
 
 int GetWorkDir()
@@ -517,7 +530,6 @@ int ChangeDir(char path[])
 
 int ListDirs(char path[])
 {
-    cout << endl;
     FILE *vfs = fopen(filename, "rb");
     char dir_name[253] = {0};
     for(int i = 0; i < 16; ++i) {
@@ -536,6 +548,7 @@ int WaitMessage()
     cout << ">> " ;
     memset(inputbuffer, 0, sizeof(inputbuffer));
     cin >> inputbuffer;
+    cout << endl;
     char dirpath[input_buffer_length] = {0};
     switch (inputbuffer[0]) {
         case 'c':

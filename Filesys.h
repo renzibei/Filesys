@@ -14,6 +14,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
+
 extern _inode inodes[4096];
 extern _super_block sbks;
 #define input_buffer_length 1024
