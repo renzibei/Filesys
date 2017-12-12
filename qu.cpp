@@ -553,7 +553,7 @@ int WaitMessage()
     memset(inputbuffer, 0, sizeof(inputbuffer));
     cin >> inputbuffer;
     cout << endl;
-    char dirpath[input_buffer_length] = {0};
+    //char dirpath[input_buffer_length] = {0};
     int inputlen = (int) strlen(inputbuffer);
     switch (inputbuffer[0]) {
         case 'c':
@@ -563,8 +563,8 @@ int WaitMessage()
                     PathError(inputbuffer);
                     return 1;
                 }
-                strcpy(dirpath, inputbuffer + 3);
-                ChangeDir(dirpath);
+                //strcpy(dirpath, inputbuffer + 3);
+                ChangeDir(inputbuffer + 3);
             }
             else {
                 if(!(inputlen > 4 && strncmp(inputbuffer, "cat ", 4))) {
@@ -572,7 +572,7 @@ int WaitMessage()
                     return 1;
                 }
                 else {
-                   // ../
+                    return cat(inputbuffer + 4);
                 }
             }
         }
@@ -592,8 +592,8 @@ int WaitMessage()
                 PathError(inputbuffer);
                 return 1;
             }
-            strcpy(dirpath, inputbuffer + 3);
-            ListDirs(dirpath);
+            //strcpy(dirpath, inputbuffer + 3);
+            ListDirs(inputbuffer + 3);
         }
             break;
         case 'm':
@@ -602,22 +602,32 @@ int WaitMessage()
                 PathError(inputbuffer);
                 return 1;
             }
-            strcpy(dirpath, inputbuffer + 6);
-            MakeDir(dirpath);
+            //strcpy(dirpath, inputbuffer + 6);
+            MakeDir(inputbuffer + 6);
         }
             break;
         case 'e':
         {
-            if(!(inputlen > 5) && strncmp(inputbuffer, "echo ", 5)) {
+            if(!(inputlen > 6) && strncmp(inputbuffer, "echo ", 5)) {
                 PathError(inputbuffer);
                 return 1;
             }
-            //../
+            for(int i = 6; i < inputlen; ++i)
+                if(inputbuffer[i] == ' '){
+                //../
+            }
         }
             break;
         case 'r':
         {
-            //../
+            if(inputlen > 3 && strncmp(inputbuffer, "rm ", 3)) {
+                return rm(inputbuffer +3);
+            }
+            else if(!(inputlen > 6) && strncmp(inputbuffer, "rmdir ", 6)) {
+                PathError(inputbuffer);
+                return 1;
+            }
+            else return rmdir(inputbuffer + 6);
         }
             break;
         default:

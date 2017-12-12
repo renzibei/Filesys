@@ -7,7 +7,9 @@ extern const int inode_size,datablk_size, dir_size, indbmp_size, blkbmp_size, in
 
 int find_free_indbmp();
 int find_free_blkbmp();
-
+int cat(char path[]);
+int rm(char path[]);
+int rmdir(char path[]);
 #endif
 
 
