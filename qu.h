@@ -13,6 +13,8 @@ struct workdir_pathnode{
 };
 
 int InitDisk();
+int DataBlkPos(int);
+void WriteDir(const char *dir_name, int relative_dir_entry_id, int dir_block_id, int son_dir_id);
 int WaitMessage();
 bool IsExit(int);
 int GetWorkDir();
@@ -20,4 +22,7 @@ int GetPathInode(char path[], int type_judge = 0);
 int FindPath(char path[], int inode_id,int type_find = 0);
 void PathError(char path[]);
 void PathError(char path[]);
+int UpdateInode(int x);
+int UpdateIndBmp(int inode_bmp_id);
+int UpdateBlkBmp(int block_bmp_id);
 #endif

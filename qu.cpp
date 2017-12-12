@@ -229,10 +229,12 @@ void GetDirName(int inode_id, int rela_son_id, char* dir_name)
     fclose(vfs);
 }
 
-int GetSelfName(int inode_id, char* selfname)
+int GetSelfName(int inode_id, char selfname[])
 {
     if(inode_id == 0) {
-        memset(selfname, 0, sizeof(selfname));
+        int namelen = (int) strlen(selfname);
+        for(int i = 0; i < namelen; ++i)
+            selfname[i] = 0;
         return 0;
     }
     FILE *vfs = fopen(filename, "rb");
@@ -393,9 +395,8 @@ void InitTempWD()
 
 int PrintWorkPath()
 {
-    for(workdir_pathnode* itdir = pathhead; itdir != NULL; itdir = itdir->nextdir) {
+    for(workdir_pathnode* itdir = pathhead; itdir != NULL; itdir = itdir->nextdir)
         cout << itdir->dirname << '/';
-    }
     cout << endl;
     return 0;
 }
