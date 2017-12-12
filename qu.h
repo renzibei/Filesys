@@ -13,7 +13,8 @@ struct workdir_pathnode{
 };
 
 int InitDisk();
-int DataBlkPos(int);
+long DataBlkPos(int x);
+long inodesPos(int x);
 void WriteDir(const char *dir_name, int relative_dir_entry_id, int dir_block_id, int son_dir_id);
 int WaitMessage();
 bool IsExit(int);

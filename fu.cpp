@@ -24,7 +24,7 @@ _dir_block get_dirblock(int inode_id)//¥¥Ω®dirblock£¨æØ∏Ê£¨√ø¥Œ π”√dirblock÷Æ«∞∂
 	FILE *vfs = fopen(filename, "rb+");
 	_dir_block block;
 	int block_id = inodes[inode_id].i_blocks[0];
-	int Position = DataBlkPos(block_id);
+	long Position = DataBlkPos(block_id);
 	for (int i = 0; i < 16; i++){
 		fseek(vfs, Position + i * dir_size, SEEK_SET);
 		fread(block.dirs[i].name, 252, 1, vfs);
@@ -38,19 +38,20 @@ _file_block get_fileblock(int inode_id)//¥¥Ω®fileblock£¨æØ∏Ê£¨√ø¥Œ π”√fileblock÷
 	_file_block fileblock;
 	FILE *vfs = fopen(filename, "rb+");
 	int block_id = inodes[inode_id].i_blocks[0];
-	int Position = DataBlkPos(block_id);
+	long Position = DataBlkPos(block_id);
 	fseek(vfs, Position, SEEK_SET);
 	fread(fileblock.data ,sizeof(fileblock.data), 1, vfs);
 	fclose(vfs);
 	return fileblock;
 }
-void write_fileblock_into_file(char str[4096],int block_id)//‘⁄block_id…œ È–¥str£¨æØ∏Ê£¨√ø¥Œ π”√«∞–Ë±£÷§ «Œƒº˛ 
+void write_fileblock_into_file(char str[],int block_id)//‘⁄block_id…œ È–¥str£¨æØ∏Ê£¨√ø¥Œ π”√«∞–Ë±£÷§ «Œƒº˛
 {
 	FILE *vfs = fopen(filename, "rb+");
-	int Position = DataBlkPos(block_id);
+	long Position = DataBlkPos(block_id);
 	fseek(vfs, Position, SEEK_SET);
-	fwrite(str ,sizeof(str), 1, vfs);
-	fwrite('\0' ,sizeof(char), datablk_size-sizeof(str), vfs);
+    fwrite(str ,sizeof(char), strlen(str), vfs);
+    char _zero = 0;
+	fwrite(&_zero ,sizeof(char), datablk_size-strlen(str), vfs);
 	fclose(vfs);
 	return;
 }
