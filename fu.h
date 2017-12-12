@@ -10,6 +10,7 @@ int find_free_blkbmp();
 int cat(char path[]);
 int rm(char path[]);
 int rmdir(char path[]);
+int echo(char path[], char str[]);
 #endif
 
 

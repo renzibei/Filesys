@@ -547,14 +547,26 @@ int ListDirs(char path[])
     return 0;
 }
 
+int InitEcho(char path[], char *inputcontent)
+{
+    int pathlen = (int) strlen(path), spacepos = -1;
+    for(int i = 0; i < pathlen - 1; ++i)
+        if(path[i] == ' ') {
+            spacepos = i;
+            strncpy(inputcontent, path, i + 1);
+            break;
+    }
+    return spacepos;
+}
+
 int WaitMessage()
 {
     cout << ">> " ;
     memset(inputbuffer, 0, sizeof(inputbuffer));
     cin >> inputbuffer;
     cout << endl;
-    //char dirpath[input_buffer_length] = {0};
-    int inputlen = (int) strlen(inputbuffer);
+    char inputcontent[input_buffer_length] = {0};
+    int inputlen = (int) strlen(inputbuffer), echopos = -1;
     switch (inputbuffer[0]) {
         case 'c':
         {
@@ -614,7 +626,13 @@ int WaitMessage()
             }
             for(int i = 6; i < inputlen; ++i)
                 if(inputbuffer[i] == ' '){
-                //../
+                    memset(inputcontent, 0 ,sizeof(inputcontent));
+                    echopos = InitEcho(inputbuffer + 6, inputcontent);
+                    if(echopos == -1) {
+                        PathError(inputbuffer);
+                        return 1;
+                    }
+                    return echo(inputbuffer + 6 + echopos, inputcontent);
             }
         }
             break;
