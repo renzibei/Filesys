@@ -155,14 +155,10 @@ void MakeHome()
     sbks.block_bitmap[0] = 1;
     UpdateIndBmp(0);
     UpdateBlkBmp(0);
-    inodes[0].i_id = 0;
-    inodes[0].i_mode = 0;
-    inodes[0].i_blocks[0] = 0;
+    inodes[0] = _inode(0, 0, 0, 0, 0);
     UpdateInode(0);
     WriteDir(".",0,0,0);
     WriteDir("..",1,0,0);
-    
-    
 }
 
 void FormatDisk()
