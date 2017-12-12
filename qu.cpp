@@ -541,13 +541,18 @@ int ListDirs(char path[])
 {
     FILE *vfs = fopen(filename, "rb");
     char dir_name[253] = {0};
-    for(int i = 0; i < 16; ++i) {
+    int dir_entry_id = -1;
+    for(int i = 2; i < 16; ++i) {
         fseek(vfs, DataBlkPos(wkpath->dir_inode), SEEK_SET);
         fseek(vfs, DirsPos(i), SEEK_CUR);
         memset(dir_name, 0, sizeof(dir_name));
         fread(dir_name, sizeof(char), 252, vfs);
-        cout << " ";
+        fread(&dir_entry_id, sizeof(int), 1, vfs);
+        if(dir_entry_id != 0)
+            cout << dir_name << " ";
+        else break;
     }
+    cout << endl;
     fclose(vfs);
     return 0;
 }
