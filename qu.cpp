@@ -554,20 +554,32 @@ int WaitMessage()
     cin >> inputbuffer;
     cout << endl;
     char dirpath[input_buffer_length] = {0};
+    int inputlen = (int) strlen(inputbuffer);
     switch (inputbuffer[0]) {
         case 'c':
         {
-            if(inputbuffer[1] != 'd') {
-                PathError(inputbuffer);
-                return 1;
+            if(inputlen > 2 && inputbuffer[1] == 'd') {
+                if(!((inputlen > 3) && (strncmp(inputbuffer, "cd ", 3) == 0))) {
+                    PathError(inputbuffer);
+                    return 1;
+                }
+                strcpy(dirpath, inputbuffer + 3);
+                ChangeDir(dirpath);
             }
-            strcpy(dirpath, inputbuffer + 3);
-            ChangeDir(dirpath);
+            else {
+                if(!(inputlen > 4 && strncmp(inputbuffer, "cat ", 4))) {
+                    PathError(inputbuffer);
+                    return 1;
+                }
+                else {
+                   // ../
+                }
+            }
         }
             break;
         case 'p':
         {
-            if(strncmp(inputbuffer,"pwd",3) != 0 ) {
+            if(!(inputlen == 3 && strncmp(inputbuffer,"pwd", 3) == 0 )) {
                 PathError(inputbuffer);
                 return 1;
             }
@@ -576,7 +588,7 @@ int WaitMessage()
             break;
         case 'l':
         {
-            if(strncmp(inputbuffer, "ls", 2) != 0) {
+            if(!( inputlen == 2 && strncmp(inputbuffer, "ls", 2) == 0)) {
                 PathError(inputbuffer);
                 return 1;
             }
@@ -586,7 +598,7 @@ int WaitMessage()
             break;
         case 'm':
         {
-            if(strncmp(inputbuffer, "mkdir", 5) != 0) {
+            if(!(inputlen > 6 && strncmp(inputbuffer, "mkdir", 5) == 0)) {
                 PathError(inputbuffer);
                 return 1;
             }
@@ -594,7 +606,23 @@ int WaitMessage()
             MakeDir(dirpath);
         }
             break;
+        case 'e':
+        {
+            if(!(inputlen > 5) && strncmp(inputbuffer, "echo ", 5)) {
+                PathError(inputbuffer);
+                return 1;
+            }
+            //../
+        }
+            break;
+        case 'r':
+        {
+            //../
+        }
+            break;
         default:
+            PathError(inputbuffer);
+            return 1;
             break;
     }
     
