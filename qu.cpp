@@ -463,7 +463,11 @@ int GetPathInode(char path[], int type_judge)
             nextdirpos = 3;
         }
     }
-    else src_inode = -1;
+    else {
+        src_inode = GetWorkDir();
+        SonDirStatus = 1;
+        nextdirpos = 2;
+    }
     if(src_inode == -1) {
         //PathError(path);
         return -1;
