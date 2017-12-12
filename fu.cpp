@@ -22,39 +22,38 @@ int GetPathInode(char path[], int type_judge = 0); */
 
 _dir_block get_dirblock(int inode_id)//创建dirblock，警告，每次使用dirblock之前都需要判断是否为文件夹 
 {
-    FILE *vfs = fopen(filename, "rb+");
-    _dir_block block;
-    int block_id = inodes[inode_id].i_blocks[0];
-    int Position = DataBlkPos(block_id);
-    for (int i = 0; i < 16; i++){
-    	fseek(vfs, Position + i * dir_size, SEEK_SET);
-    	fread(block.dirs[i].name,sizeof(block.dirs[i].name), 1, vfs);
-    	fseek(vfs, 252, SEEK_CUR);
-    	fread(&block.dirs[i].inode_id,sizeof(block.dirs[i].inode_id), 1, vfs);
-    }
-    fclose(vfs);
-    return block;
+	FILE *vfs = fopen(filename, "rb+");
+	_dir_block block;
+	int block_id = inodes[inode_id].i_blocks[0];
+	int Position = DataBlkPos(block_id);
+	for (int i = 0; i < 16; i++){
+		fseek(vfs, Position + i * dir_size, SEEK_SET);
+		fread(block.dirs[i].name, 252, 1, vfs);
+		fread(&block.dirs[i].inode_id,sizeof(block.dirs[i].inode_id), 1, vfs);
+	}
+	fclose(vfs);
+	return block;
 }
 _file_block get_fileblock(int inode_id)//创建fileblock，警告，每次使用fileblock之前都需要判断是否为文件 
 {
 	_file_block fileblock;
-    FILE *vfs = fopen(filename, "rb+");
-    int block_id = inodes[inode_id].i_blocks[0];
-    int Position = DataBlkPos(block_id);
-    fseek(vfs, Position, SEEK_SET);
-    fread(fileblock.data ,sizeof(fileblock.data), 1, vfs);
-    fclose(vfs);
-    return fileblock;
+	FILE *vfs = fopen(filename, "rb+");
+	int block_id = inodes[inode_id].i_blocks[0];
+	int Position = DataBlkPos(block_id);
+	fseek(vfs, Position, SEEK_SET);
+	fread(fileblock.data ,sizeof(fileblock.data), 1, vfs);
+	fclose(vfs);
+	return fileblock;
 }
 void write_fileblock_into_file(char str[4096],int block_id)//在block_id上书写str，警告，每次使用前需保证是文件 
 {
-    FILE *vfs = fopen(filename, "rb+");
-    int Position = DataBlkPos(block_id);
-    fseek(vfs, Position, SEEK_SET);
-    fwrite(str ,sizeof(str), 1, vfs);
-    fwrite('\0' ,sizeof(char), datablk_size-sizeof(str), vfs);
-    fclose(vfs);
-    return;
+	FILE *vfs = fopen(filename, "rb+");
+	int Position = DataBlkPos(block_id);
+	fseek(vfs, Position, SEEK_SET);
+	fwrite(str ,sizeof(str), 1, vfs);
+	fwrite('\0' ,sizeof(char), datablk_size-sizeof(str), vfs);
+	fclose(vfs);
+	return;
 }
 int find_free_indbmp(){
 	int i = 0;
@@ -107,10 +106,10 @@ int echo(char path[], char str[])//将str在写入path路径的文件
 	bool UpDir = 0;
 	for (int i = 251; i >= 0; i--){
 		if(path[i] == '/') {
-            UpDir = 1;
-            UpDirPos = i;
-            break;
-        }
+			UpDir = 1;
+			UpDirPos = i;
+			break;
+		}
 	}
 	if (UpDir){//获得文件名、上级文件夹路径
 		for (int i = UpDirPos - 1; i >= 0; i--){
@@ -190,45 +189,6 @@ int cat(char path[])//读取path路径的文件
 	printf("%s\n",get_fileblock(str_inode_id).data);
 	return 0;
 }
-
-int delete_directory(int path_inode_id)//删除某inode_id的文件，path_inode_id<0代表不存在，返回-2；若是文件（而非文件夹）返回-1
-{
-	if (path_inode_id < 0) {
-		return -2;
-	}
-	if (inodes[path_inode_id].i_mode == 1) {
-		return -1;
-	}
-	_dir_block dirblock = get_dirblock(dir_inode_id);
-	for (int i = 3; i < 16; i++) {
-		char down_name[252] = dirblock.dirs[i].name;
-		bool NotEmpty = false;
-		for (int j = 0; j < 252; j++) {
-			if (down_name[j] != 0) {
-				NotEmpty = true;
-				break;
-			}
-		}
-		if (NotEmpty) {
-			int down_inode_id = dirblock.dirs[i].inode_id;
-			int down_mode = inodes[down_inode_id].i_mode;
-			if (down_mode == 1) {
-				delete_file(down_inode_id);
-			}
-			else {
-				delete_directory(down_inode_id);
-			}
-		}
-	}
-
-	char str[252] = { 0 };
-	for (int i = 0; i < 252; i++) {
-		str[i] = '\0';
-	}//current here 12/12 11:38
-	WriteDir(str, 1, 0, path_inode_id);
-	WriteDir()
-}
-
 int delete_file(int path_inode_id)//删除某inode_id的文件，已加判断path是否为文件夹，需自行判断path存在且uppath为文件夹
 {
 	if (inodes[path_inode_id].i_mode == 0) {
@@ -257,6 +217,69 @@ int delete_file(int path_inode_id)//删除某inode_id的文件，已加判断path是否为文件
 	return 0;
 }
 
+int delete_directory(int path_inode_id)//删除某inode_id的文件，path_inode_id<0代表不存在，返回-2；若是文件（而非文件夹）返回-1
+{
+	if (path_inode_id < 0) {
+		return -2;
+	}
+	if (inodes[path_inode_id].i_mode == 1) {
+		return -1;
+	}
+
+	_dir_block dirblock = get_dirblock(path_inode_id);
+	//删除子文件夹和子文件
+	for (int i = 3; i < 16; i++) {
+		
+		char* down_name = dirblock.dirs[i].name;
+		bool NotEmpty = false;
+		for (int j = 0; j < 252; j++) {
+			if (down_name[j] != 0) {
+				NotEmpty = true;
+				break;
+			}
+		}
+		if (NotEmpty) {
+			int down_inode_id = dirblock.dirs[i].inode_id;
+			int down_mode = inodes[down_inode_id].i_mode;
+			if (down_mode == 1) {
+				delete_file(down_inode_id);
+			}
+			else {
+				delete_directory(down_inode_id);
+			}
+		}
+	}
+
+	char str[252] = { 0 };
+	for (int i = 0; i < 252; i++) {
+		str[i] = '\0';
+	}//current here 12/12 11:38
+	int uppath_inode_id = inodes[path_inode_id].fat_id;
+	int path_position = find_position_dir_entry(path_inode_id);
+	if (path_position < 0) {//理论上这种情况不能出现，debug完毕后要删去
+		printf("Unexpected mistake happened");
+		return -1;
+	}
+	if (path_position >= 0) {
+		WriteDir(str, path_position, 0, uppath_inode_id);
+	}
+	WriteDir(str, 1, 0, path_inode_id);
+	WriteDir(str, 0, 0, path_inode_id);//删除自身目录项的"." ".." 以及上一级文件夹目录项的"./name"
+
+	sbks.inode_bitmap[path_inode_id] = 0;
+	UpdateIndBmp(path_inode_id);
+	int path_block_id = inodes[path_inode_id].i_blocks[0];
+	sbks.inode_bitmap[path_block_id] = 0;
+	UpdateIndBmp(path_block_id);//解除superblock占用状态
+
+	inodes[path_inode_id] = _inode(0, 0, 0, 0, 0);
+	UpdateInode(path_inode_id);//删除自身inode信息
+
+	return 0;
+}
+
+
+
 int rm(char path[])//删除path路径的文件 
 {
 	int path_inode_id = GetPathInode(path);
@@ -271,7 +294,7 @@ int rm(char path[])//删除path路径的文件
 	return i;
 }
 
-int rmdir(char path[]);//删除path路径的文件夹
+int rmdir(char path[])//删除path路径的文件夹
 {
 	int path_inode_id = GetPathInode(path);
 	int i = delete_directory(path_inode_id);
