@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "qu.h"
 #define EXITFLAG 0x7fffffff
 const char filename[12] = "Filesys.vfs";

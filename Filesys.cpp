@@ -6,6 +6,7 @@
 //
 
 
+#define _CRT_SECURE_NO_WARNINGS
 #include "Filesys.h"
 _super_block sbks;
 _inode inodes[4096];
