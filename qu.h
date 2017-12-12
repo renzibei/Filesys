@@ -12,6 +12,8 @@ struct workdir_pathnode{
     workdir_pathnode *prevdir;
 };
 
+extern char inputbuffer[input_buffer_length];
+
 int InitDisk();
 long DataBlkPos(int x);
 long inodesPos(int x);

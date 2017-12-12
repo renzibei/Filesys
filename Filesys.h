@@ -22,7 +22,6 @@
 extern _inode inodes[4096];
 extern _super_block sbks;
 
-char inputbuffer[input_buffer_length];
 
 using namespace std;
 
