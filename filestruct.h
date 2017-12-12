@@ -1,7 +1,11 @@
 #ifndef FILESTRUCT_H
 #define FILESTRUCT_H
 #include "Filesys.h"
+
+#ifndef PLACEHOLDER
 #define PLACEHOLDER 12
+#endif
+
 extern const char filename[12];
 extern const int inode_size,datablk_size, dir_size, indbmp_size, blkbmp_size, inodes_size;
 
