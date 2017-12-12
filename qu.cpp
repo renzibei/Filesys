@@ -1,7 +1,9 @@
 #include "qu.h"
+#define EXITFLAG 0x7fffffff
 const char filename[12] = "Filesys.vfs";
 const int inode_size = 32, datablk_size = 4096, dir_size = 256;
 const int indbmp_size = 4096, blkbmp_size = 4096, inodes_size = inode_size * 4096;
+
 
 workdir_pathnode *pathhead = NULL;
 workdir_pathnode *wkpath   = NULL;
@@ -560,6 +562,11 @@ int InitEcho(char path[], char *inputcontent)
     return spacepos;
 }
 
+bool IsExit(int flag)
+{
+    return flag == EXITFLAG;
+}
+
 int WaitMessage()
 {
     cout << ">> " ;
@@ -621,20 +628,28 @@ int WaitMessage()
             break;
         case 'e':
         {
-            if(!(inputlen > 6) && strncmp(inputbuffer, "echo ", 5)) {
+            if(inputlen > 2 && inputbuffer[1] == 'c') {
+                if(!(inputlen > 6) && strncmp(inputbuffer, "echo ", 5)) {
+                    PathError(inputbuffer);
+                    return 1;
+                }
+                for(int i = 6; i < inputlen; ++i)
+                    if(inputbuffer[i] == ' '){
+                        memset(inputcontent, 0 ,sizeof(inputcontent));
+                        echopos = InitEcho(inputbuffer + 6, inputcontent);
+                        if(echopos == -1) {
+                            PathError(inputbuffer);
+                            return 1;
+                        }
+                        return echo(inputbuffer + 6 + echopos, inputcontent);
+                }
+            }
+            else if(inputlen == 4 && strcpy(inputbuffer, "exit"))
+                return EXITFLAG;
+            else {
                 PathError(inputbuffer);
                 return 1;
-            }
-            for(int i = 6; i < inputlen; ++i)
-                if(inputbuffer[i] == ' '){
-                    memset(inputcontent, 0 ,sizeof(inputcontent));
-                    echopos = InitEcho(inputbuffer + 6, inputcontent);
-                    if(echopos == -1) {
-                        PathError(inputbuffer);
-                        return 1;
-                    }
-                    return echo(inputbuffer + 6 + echopos, inputcontent);
-            }
+                }
         }
             break;
         case 'r':
