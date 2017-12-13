@@ -195,6 +195,9 @@ int InitBuffer()
     return 0;
 }
 
+
+
+
 void InitWorkPath()
 {
     pathtail = new workdir_pathnode;
@@ -209,6 +212,7 @@ void InitWorkPath()
     pathtail->prevdir = pathhead;
     wkpath = pathtail->prevdir;
 }
+
 
 int InitDisk()
 {
@@ -277,6 +281,24 @@ void NewWorkDirNode(int far_inode_id,int son_inode_id,int rela_son_id = 0)
 
 
 
+int UpdatePath(char dir_name[], int fat_inode_id, int son_inode_id)
+{
+    if((strlen(dir_name) == 1 && dir_name[0] == '.') || strlen(dir_name) == 0)
+        return 0;
+    else if(strlen(dir_name) == 2 && strncmp(dir_name, "..", 2) == 0) {
+        if(tempwd->prevdir) {
+            tempwd->prevdir->nextdir = temptail;
+            temptail->prevdir = tempwd->prevdir;
+            delete tempwd;
+            tempwd = temptail->prevdir;
+        }
+    }
+    else {
+        NewWorkDirNode(fat_inode_id, son_inode_id);
+    }
+    return 0;
+}
+
 int FindPath(char path[], int inode_id,int type_find)
 {
     int path_len = (int) strlen(path);
@@ -296,16 +318,18 @@ int FindPath(char path[], int inode_id,int type_find)
        // if(type_find == 1)
          //   NewWorkDirNode(inode_id, son_inode_id, relasondir);
         son_inode_id = FindSonPath(path, inode_id, relasondir);
-		if (type_find == 1 && son_inode_id != 0)
-			NewWorkDirNode(inode_id, son_inode_id, relasondir);
+		if (type_find == 1/* && son_inode_id != 0 */)
+            UpdatePath(path, inode_id, son_inode_id);
+            //NewWorkDirNode(inode_id, son_inode_id, relasondir);
         return son_inode_id;
     }
     strncpy(SonDirPath, path, AnoDirPos);
     son_inode_id = FindSonPath(SonDirPath, inode_id, relasondir);
     if(son_inode_id == -1)
         return -1;
-    if(type_find == 1 && son_inode_id != 0) //需要改 考虑回退
-        NewWorkDirNode(inode_id, son_inode_id, relasondir);
+    if(type_find == 1 /*&& son_inode_id != 0*/) //需要改 考虑回退
+        UpdatePath(SonDirPath, inode_id, son_inode_id);
+        //NewWorkDirNode(inode_id, son_inode_id, relasondir);
     return FindPath(path + AnoDirPos + 1, son_inode_id, type_find);
 }
 
@@ -346,6 +370,7 @@ int GetFatDir()
     return inodes[wkpath->dir_inode].fat_id;
 }
 
+/*
 int SwitchWorkDir(int status)
 {
     switch (status) {
@@ -394,22 +419,96 @@ int SwitchWorkDir(int status)
     temptail = NULL;
     temphead =NULL;
     return 0;
+}*/
+int SwitchWorkDir(int switchmode = 0)
+{
+    switch (switchmode) {
+        case 0:
+        {
+            FreeDirPath(wkpath);
+            wkpath = tempwd;
+            pathhead = temphead;
+            pathtail = temptail;
+        }
+            break;
+            /*
+        case 1:
+        {
+            wkpath->nextdir = temphead->nextdir;
+            temphead->nextdir->prevdir = wkpath;
+            delete pathtail;
+            delete temphead;
+            wkpath = tempwd;
+            pathtail = temptail;
+        }
+            break;
+        case 2:
+        {
+            if(wkpath->prevdir) {
+                wkpath->prevdir->nextdir = temphead->nextdir;
+                temphead->nextdir->prevdir = wkpath->prevdir;
+            }
+            else {
+                pathhead->nextdir = temphead->nextdir;
+                temphead->nextdir->prevdir = pathhead;
+            }
+            if(wkpath != pathhead)
+                delete wkpath;
+            delete pathtail;
+            if(temphead->dir_inode != 0)
+                wkpath = tempwd;
+            else wkpath = pathhead;
+            delete temphead;
+            pathtail = temptail;
+        }
+            break;
+            */
+        default:
+            break;
+    }
+    tempwd = NULL;
+    temptail = NULL;
+    temphead =NULL;
+    return 0;
+}
+void CopyPath()
+{
+    temphead = new workdir_pathnode;
+    wkpath = temphead;
+    temphead->prevdir = NULL;
+    for(workdir_pathnode * ppath = pathhead; ppath != pathtail; ppath = ppath->nextdir) {
+        wkpath->dir_inode = ppath->dir_inode;
+        strncpy(wkpath->dirname, ppath->dirname, 252);
+        wkpath->nextdir = new workdir_pathnode;
+        wkpath->nextdir->prevdir = wkpath;
+        wkpath = wkpath->nextdir;
+    }
+    temptail = wkpath;
+    temptail->nextdir = NULL;
+    temptail->dir_inode = -1;
+    memset(temptail, 0, sizeof(temptail->dirname));
 }
 
-void InitTempWD()
+void InitTempWD(int initmode = 0)
 {
-    temptail = new workdir_pathnode;
-    temptail->dir_inode = -1;
-    temphead = new workdir_pathnode;
-    temphead->dir_inode = 0;
-    memset(temphead->dirname, 0, sizeof(temphead->dirname));
-    memset(temptail->dirname, 0, sizeof(temptail->dirname));
-    temphead->prevdir = NULL;
-    temptail->nextdir = NULL;
-    temphead->nextdir = temptail;
-    temptail->prevdir = temphead;
-    tempwd = temptail->prevdir;
+    if(initmode == 1) {
+        CopyPath();
+    }
+    else {
+        temptail = new workdir_pathnode;
+        temptail->dir_inode = -1;
+        temphead = new workdir_pathnode;
+        temphead->dir_inode = 0;
+        memset(temphead->dirname, 0, sizeof(temphead->dirname));
+        memset(temptail->dirname, 0, sizeof(temptail->dirname));
+        temphead->prevdir = NULL;
+        temptail->nextdir = NULL;
+        temphead->nextdir = temptail;
+        temptail->prevdir = temphead;
+        tempwd = temptail->prevdir;
+    }
 }
+
 
 int PrintWorkPath()
 {
@@ -418,47 +517,58 @@ int PrintWorkPath()
     cout << endl;
     return 0;
 }
-/*
-//获得文件夹的inode,文件路径错误时返回值为-1，是文件而不是文件夹时返回-2
-int GetDirPathInode(char path[], int type_judge = 0)  //type_judge == 0时是正常的获得文件夹的inode 普通调用时可忽略这一参数
+
+
+int GetPathInode(char path[], int type_judge)
 {
     int path_len = (int) strlen(path);
-    int src_inode = 0;
+    int nextdirpos = 0;
+    int src_inode = 0, initpathmode = 0;
     int SonDirStatus = 0;
-    if(path[0] == '/')
+    if(path[0] == '/') {
         src_inode = 0;
-    else if(path[0] == '.') {
-        if(path_len ==2 && path[1] == '.') {
-            src_inode = GetFatDir();
-            SonDirStatus = 2;
-        }
-        else if(path_len == 1) {
+        nextdirpos = 1;
+        initpathmode = 0;
+    }
+    /*else if(path[0] == '.' && path_len > 1) {
+        if(path[1] == '/') {
             src_inode = GetWorkDir();
             SonDirStatus = 1;
+            nextdirpos = 2;
         }
+        else if(path_len > 2 && path[1] == '.' && path[2] == '/') {
+            src_inode = GetFatDir();
+            SonDirStatus = 2;
+            nextdirpos = 3;
+        }
+    }*/
+    else {
+        initpathmode = 1;
+        src_inode = GetWorkDir();
+        SonDirStatus = 1;
+        nextdirpos = 0;
     }
-    else src_inode = -1;
     if(src_inode == -1) {
         //PathError(path);
         return -1;
     }
     if(type_judge == 1)
-        InitTempWD();
-    int dst_inode_id = FindPath(path, src_inode);
+        InitTempWD(initpathmode);
+    int dst_inode_id = FindPath(path + nextdirpos, src_inode, type_judge);
     if(dst_inode_id == -1) {
-       // PathError(path);
+        // PathError(path);
         return -1;
     }
-    
-    if(inodes[dst_inode_id].i_mode == 1) {
-        //DirError(path)
-        return -2;
-    }
-    if(type_judge == 1)
-        SwitchWorkDir(SonDirStatus);
-    return 0;
+    /*
+     if(inodes[dst_inode_id].i_mode == 1) {
+     //DirError(path)
+     return -2;
+     }*/
+    if(type_judge == 1 && inodes[dst_inode_id].i_mode == 0)
+        SwitchWorkDir();
+    return dst_inode_id;
 }
-*/
+/*
 //直接查找path[]对应的文件或文件夹，返回inode_id，错误返回-1
 int GetPathInode(char path[], int type_judge)
 {
@@ -498,51 +608,15 @@ int GetPathInode(char path[], int type_judge)
         // PathError(path);
         return -1;
     }
-    /*
-    if(inodes[dst_inode_id].i_mode == 1) {
-        //DirError(path)
-        return -2;
-    }*/
+ 
     if(type_judge == 1 && inodes[dst_inode_id].i_mode == 0)
         SwitchWorkDir(SonDirStatus);
     return dst_inode_id;
 }
-
+*/
 int ChangeDir(char *path)
 {
-    /*
-    int path_len = (int) strlen(path);
-    int src_inode = 0;
-    int SonDirStatus = 0;
-    if(path[0] == '/')
-        src_inode = 0;
-    else if(path[0] == '.') {
-        if(path_len ==2 && path[1] == '.') {
-            src_inode = GetFatDir();
-            SonDirStatus = 2;
-        }
-        else if(path_len == 1) {
-            src_inode = GetWorkDir();
-            SonDirStatus = 1;
-        }
-    }
-    else src_inode = -1;
-    if(src_inode == -1) {
-        PathError(path);
-        return -1;
-    }
-    InitTempWD();
-    int dst_inode_id = FindPath(path, src_inode);
-    if(dst_inode_id == -1) {
-        PathError(path);
-        return -1;
-    }
     
-    if(inodes[dst_inode_id].i_mode == 1) {
-        DirError(path);
-        return -1;
-    }
-    SwitchWorkDir(SonDirStatus); */
     int returnstatus = GetPathInode(path, 1);
     if(returnstatus == -1)
         PathError(path);
