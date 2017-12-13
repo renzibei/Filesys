@@ -120,7 +120,7 @@ int MakeDir(char path[])
     if(divpos == -1)
         fat_inode = GetWorkDir();
     else {
-        strncpy(fat_path, path, divpos + 1);
+        strncpy(fat_path, path, divpos);
         fat_inode = GetPathInode(fat_path);
         if(fat_inode == -1) {
             PathError(fat_path);
