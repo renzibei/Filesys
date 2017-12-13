@@ -251,7 +251,7 @@ int GetSelfName(int inode_id, char selfname[])
         fseek(vfs, 252L, SEEK_CUR);
         fread(&tempid, sizeof(int), 1, vfs);
         if(tempid == inode_id) {
-            fseek(vfs, DataBlkPos(inode_id), SEEK_SET);
+            fseek(vfs, DataBlkPos(inodes[inode_id].fat_id), SEEK_SET);
             fseek(vfs, DirsPos(i), SEEK_CUR);
             fread(selfname, sizeof(char), 252, vfs);
             fclose(vfs);
@@ -296,7 +296,7 @@ int FindPath(char path[], int inode_id,int type_find)
        // if(type_find == 1)
          //   NewWorkDirNode(inode_id, son_inode_id, relasondir);
         son_inode_id = FindSonPath(path, inode_id, relasondir);
-		if (type_find == 1)
+		if (type_find == 1 && son_inode_id != 0)
 			NewWorkDirNode(inode_id, son_inode_id, relasondir);
         return son_inode_id;
     }
@@ -304,7 +304,7 @@ int FindPath(char path[], int inode_id,int type_find)
     son_inode_id = FindSonPath(SonDirPath, inode_id, relasondir);
     if(son_inode_id == -1)
         return -1;
-    if(type_find == 1)
+    if(type_find == 1 && son_inode_id != 0)
         NewWorkDirNode(inode_id, son_inode_id, relasondir);
     return FindPath(path + AnoDirPos + 1, son_inode_id, type_find);
 }
@@ -360,9 +360,10 @@ int SwitchWorkDir(int status)
         case 1:
         {
             wkpath->nextdir = temphead->nextdir;
-            temphead->nextdir->prevdir = wkpath->nextdir;
+            temphead->nextdir->prevdir = wkpath;
             delete pathtail;
             delete temphead;
+            wkpath = tempwd;
             pathtail = temptail;
         }
             break;
