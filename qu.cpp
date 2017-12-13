@@ -369,15 +369,21 @@ int SwitchWorkDir(int status)
             break;
         case 2:
         {
-            if(wkpath->prevdir)
+            if(wkpath->prevdir) {
 				wkpath->prevdir->nextdir = temphead->nextdir;
-			else pathhead->nextdir = temphead->nextdir;
-            temphead->nextdir->prevdir = wkpath->prevdir;
+                temphead->nextdir->prevdir = wkpath->prevdir;
+            }
+            else {
+                pathhead->nextdir = temphead->nextdir;
+                temphead->nextdir->prevdir = pathhead;
+            }
             if(wkpath != pathhead)
 				delete wkpath;
             delete pathtail;
+            if(temphead->dir_inode != 0)
+                wkpath = tempwd;
+            else wkpath = pathhead;
             delete temphead;
-            wkpath = tempwd;
             pathtail = temptail;
         }
             break;
@@ -687,4 +693,10 @@ int WaitMessage()
     }
     
     return 0;
+}
+
+void debug()
+{
+    int *haha = NULL;
+    delete haha;
 }

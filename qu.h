@@ -31,4 +31,5 @@ void PathError(char path[]);
 int UpdateInode(int x);
 int UpdateIndBmp(int inode_bmp_id);
 int UpdateBlkBmp(int block_bmp_id);
+void debug();
 #endif
