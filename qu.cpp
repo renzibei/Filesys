@@ -300,11 +300,11 @@ int FindPath(char path[], int inode_id,int type_find)
 			NewWorkDirNode(inode_id, son_inode_id, relasondir);
         return son_inode_id;
     }
-    strncpy(SonDirPath, path, AnoDirPos + 1);
+    strncpy(SonDirPath, path, AnoDirPos);
     son_inode_id = FindSonPath(SonDirPath, inode_id, relasondir);
     if(son_inode_id == -1)
         return -1;
-    if(type_find == 1 && son_inode_id != 0)
+    if(type_find == 1 && son_inode_id != 0) //需要改 考虑回退
         NewWorkDirNode(inode_id, son_inode_id, relasondir);
     return FindPath(path + AnoDirPos + 1, son_inode_id, type_find);
 }
