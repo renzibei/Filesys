@@ -481,8 +481,12 @@ void InitTempWD(int initmode = 0)
 
 int PrintWorkPath()
 {
-    for(workdir_pathnode* itdir = pathhead; itdir->nextdir != NULL; itdir = itdir->nextdir)
-        cout << itdir->dirname << '/';
+    if(pathhead->nextdir == pathtail)
+        cout << '/';
+    else for(workdir_pathnode* itdir = pathhead; itdir->nextdir != NULL; itdir = itdir->nextdir)
+            if(itdir == wkpath)
+                cout << itdir->dirname;
+            else cout << itdir->dirname << '/';
     cout << endl;
     return 0;
 }
