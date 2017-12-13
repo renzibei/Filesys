@@ -485,7 +485,7 @@ int PrintWorkPath()
         cout << '/';
     else for(workdir_pathnode* itdir = pathhead; itdir->nextdir != NULL; itdir = itdir->nextdir)
             if(itdir == wkpath)
-                cout << itdir->dirname;
+                cout <<itdir->dirname;
             else cout << itdir->dirname << '/';
     cout << endl;
     return 0;
@@ -494,7 +494,7 @@ int PrintWorkPath()
 
 int GetPathInode(char path[], int type_judge)
 {
-    int path_len = (int) strlen(path);
+    //int path_len = (int) strlen(path);
     int nextdirpos = 0;
     int src_inode = 0, initpathmode = 0;
     int SonDirStatus = 0;
@@ -538,16 +538,21 @@ int ChangeDir(char *path)
 int ListDirs(char path[])
 {
     FILE *vfs = fopen(filename, "rb");
+    cout.setf(ios::left);
     char dir_name[253] = {0};
     int dir_entry_id = -1;
     for(int i = 2; i < 16; ++i) {
+        if(i > 3 && (i - 2) % 5 == 0)
+            cout << endl;
         fseek(vfs, DataBlkPos(wkpath->dir_inode), SEEK_SET);
         fseek(vfs, DirsPos(i), SEEK_CUR);
         memset(dir_name, 0, sizeof(dir_name));
         fread(dir_name, sizeof(char), 252, vfs);
         fread(&dir_entry_id, sizeof(int), 1, vfs);
-        if(dir_entry_id != 0)
-            cout << dir_name << " ";
+        if(dir_entry_id != 0) {
+            cout.width(10);
+            cout << dir_name << "   ";
+        }
         else break;
     }
     cout << endl;
