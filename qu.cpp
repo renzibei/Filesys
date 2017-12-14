@@ -318,7 +318,7 @@ int FindPath(char path[], int inode_id,int type_find)
        // if(type_find == 1)
          //   NewWorkDirNode(inode_id, son_inode_id, relasondir);
         son_inode_id = FindSonPath(path, inode_id, relasondir);
-		if (type_find == 1/* && son_inode_id != 0 */)
+		if (type_find == 1 && son_inode_id != -1 )
             UpdatePath(path, inode_id, son_inode_id);
             //NewWorkDirNode(inode_id, son_inode_id, relasondir);
         return son_inode_id;
@@ -337,13 +337,17 @@ int FindPath(char path[], int inode_id,int type_find)
 
 
 
-void FreeDirPath(workdir_pathnode *tempnode)
+void FreeDirPath(workdir_pathnode *tempnode, int freemode = 0) //有错误
 {
     for(workdir_pathnode *tpdir = tempnode; tpdir != NULL; tpdir = tempnode) {
         tempnode = tpdir->nextdir;
         delete tpdir;
     }
-    
+    if(freemode == 0) {
+        temphead = NULL;
+        temptail = NULL;
+        tempwd = NULL;
+    }
 }
 
 void PathError(char path[])
@@ -425,7 +429,7 @@ int SwitchWorkDir(int switchmode = 0)
     switch (switchmode) {
         case 0:
         {
-            FreeDirPath(wkpath);
+            FreeDirPath(wkpath, 1);
             wkpath = tempwd;
             pathhead = temphead;
             pathtail = temptail;
