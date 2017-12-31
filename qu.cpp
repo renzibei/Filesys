@@ -233,7 +233,7 @@ int InitDisk()
 void GetDirName(int inode_id, int rela_son_id, char* dir_name)
 {
     FILE *vfs = fopen(filename, "rb");
-    fseek(vfs, DataBlkPos(inode_id), SEEK_SET);
+    fseek(vfs, DataBlkPos(inodes[inode_id].i_blocks[0]), SEEK_SET);
     fseek(vfs, DirsPos(rela_son_id), SEEK_CUR);
     fread(dir_name, sizeof(char), 252, vfs);
     fclose(vfs);
@@ -250,12 +250,12 @@ int GetSelfName(int inode_id, char selfname[])
     FILE *vfs = fopen(filename, "rb");
     int tempid = -1;
     for(int i = 0; i < 16; ++i) {
-        fseek(vfs, DataBlkPos(inodes[inode_id].fat_id), SEEK_SET);
+        fseek(vfs, DataBlkPos(inodes[inodes[inode_id].fat_id].i_blocks[0]), SEEK_SET);
         fseek(vfs, DirsPos(i), SEEK_CUR);
         fseek(vfs, 252L, SEEK_CUR);
         fread(&tempid, sizeof(int), 1, vfs);
         if(tempid == inode_id) {
-            fseek(vfs, DataBlkPos(inodes[inode_id].fat_id), SEEK_SET);
+            fseek(vfs, DataBlkPos(inodes[inodes[inode_id].fat_id].i_blocks[0]), SEEK_SET);
             fseek(vfs, DirsPos(i), SEEK_CUR);
             fread(selfname, sizeof(char), 252, vfs);
             fclose(vfs);
@@ -327,6 +327,8 @@ int FindPath(char path[], int inode_id,int type_find)
     son_inode_id = FindSonPath(SonDirPath, inode_id, relasondir);
     if(son_inode_id == -1)
         return -1;
+    if(inodes[son_inode_id].i_mode == 1)
+        return -1;
     if(type_find == 1 /*&& son_inode_id != 0*/) //需要改 考虑回退
         UpdatePath(SonDirPath, inode_id, son_inode_id);
         //NewWorkDirNode(inode_id, son_inode_id, relasondir);
@@ -356,6 +358,12 @@ void PathError(char path[])
     cout << path << " " << "No such file or directory" << endl;
     
     //..
+}
+
+void CmdError(char cmds[])
+{
+    FreeDirPath(temphead);
+    cout << cmds << ": command not found" << endl;
 }
 
 void DirError(char path[])
@@ -544,11 +552,15 @@ int ListDirs(char path[])
     FILE *vfs = fopen(filename, "rb");
     cout.setf(ios::left);
     char dir_name[253] = {0};
+    int tar_inodeid = 0;
+    if(strlen(path) == 0)
+        tar_inodeid = wkpath->dir_inode;
+    else tar_inodeid = GetPathInode(path);
     int dir_entry_id = -1;
     for(int i = 2; i < 16; ++i) {
         if(i > 3 && (i - 2) % 5 == 0)
             cout << endl;
-        fseek(vfs, DataBlkPos(wkpath->dir_inode), SEEK_SET);
+        fseek(vfs, DataBlkPos(tar_inodeid), SEEK_SET);
         fseek(vfs, DirsPos(i), SEEK_CUR);
         memset(dir_name, 0, sizeof(dir_name));
         fread(dir_name, sizeof(char), 252, vfs);
@@ -581,6 +593,24 @@ bool IsExit(int flag)
     return flag == EXITFLAG;
 }
 
+char tempcmd[input_buffer_length] = {0};
+bool IsCmdErr(const char* cmd, char path[], int judgemode = 1)
+{
+    memset(tempcmd, 0, sizeof(tempcmd));
+    int cmdlen = (int) strlen(cmd), pathlen = (int) strlen(path);
+    if(pathlen >= cmdlen) {
+        if(pathlen == cmdlen && strncmp(cmd, path, pathlen) == 0)
+            return 0;
+        else if(judgemode == 1){
+            strncpy(tempcmd, cmd, cmdlen);
+            tempcmd[cmdlen] = ' ';
+            if(strncmp(tempcmd, path, cmdlen+1) == 0)
+                return 0;
+        }
+    }
+    return 1;
+}
+
 int WaitMessage()
 {
     cout << ">> " ;
@@ -593,95 +623,118 @@ int WaitMessage()
     switch (inputbuffer[0]) {
         case 'c':
         {
-            if(inputlen > 2 && inputbuffer[1] == 'd') {
-                if(!((inputlen > 3) && (strncmp(inputbuffer, "cd ", 3) == 0))) {
-                    PathError(inputbuffer);
-                    return 1;
-                }
+            
+            if(inputlen > 1 && inputbuffer[1] == 'd') {
+                if(!IsCmdErr("cd", inputbuffer)) {
+                    if(!((inputlen > 3) && (strncmp(inputbuffer, "cd ", 3) == 0))) {
+                        PathError(inputbuffer + 3);
+                        return 1;
+                    }
                 //strcpy(dirpath, inputbuffer + 3);
-                ChangeDir(inputbuffer + 3);
+                    else ChangeDir(inputbuffer + 3);
+                    
+                }
+            }
+            else if(!IsCmdErr("cat", inputbuffer)) {
+                    if(!(inputlen > 4 && strncmp(inputbuffer, "cat ", 4))) {
+                        PathError(inputbuffer + 4);
+                        return 1;
+                    }
+                    else
+                        return cat(inputbuffer + 4);
             }
             else {
-                if(!(inputlen > 4 && strncmp(inputbuffer, "cat ", 4))) {
-                    PathError(inputbuffer);
-                    return 1;
-                }
-                else {
-                    return cat(inputbuffer + 4);
-                }
+                CmdError(inputbuffer);
+                return 2;
             }
         }
             break;
         case 'p':
         {
-            if(!(inputlen == 3 && strncmp(inputbuffer,"pwd", 3) == 0 )) {
-                PathError(inputbuffer);
-                return 1;
+            if(IsCmdErr("pwd", inputbuffer, 0)) {
+                CmdError(inputbuffer);
+                return 2;
             }
             else PrintWorkPath();
         }
             break;
         case 'l':
         {
-            if(!( inputlen == 2 && strncmp(inputbuffer, "ls", 2) == 0)) {
-                PathError(inputbuffer);
-                return 1;
+            if(IsCmdErr("ls", inputbuffer)) {
+                CmdError(inputbuffer);
+                return 2;
             }
-            //strcpy(dirpath, inputbuffer + 3);
-            ListDirs(inputbuffer + 3);
+            return ListDirs(inputbuffer + 3);
         }
             break;
         case 'm':
         {
-            if(!(inputlen > 6 && strncmp(inputbuffer, "mkdir", 5) == 0)) {
-                PathError(inputbuffer);
+            if(IsCmdErr("mkdir", inputbuffer)) {
+                CmdError(inputbuffer);
+                return 2;
+            }
+            else if(!(inputlen > 6 && strncmp(inputbuffer, "mkdir ", 6) == 0)) {
+                PathError(inputbuffer + 6);
                 return 1;
             }
-            //strcpy(dirpath, inputbuffer + 6);
-            MakeDir(inputbuffer + 6);
+            return MakeDir(inputbuffer + 6);
         }
             break;
         case 'e':
         {
             if(inputlen > 2 && inputbuffer[1] == 'c') {
-                if(!(inputlen > 6) && strncmp(inputbuffer, "echo ", 5)) {
-                    PathError(inputbuffer);
-                    return 1;
-                }
-                for(int i = 6; i < inputlen; ++i)
-                    if(inputbuffer[i] == ' '){
-                        memset(inputcontent, 0 ,sizeof(inputcontent));
-                        echopos = InitEcho(inputbuffer + 6, inputcontent);
-                        if(echopos == -1) {
-                            PathError(inputbuffer);
-                            return 1;
-                        }
-                        return echo(inputbuffer + 6 + echopos, inputcontent);
+                if(!IsCmdErr("echo", inputbuffer)) {
+                    if(!(inputlen > 6) && strncmp(inputbuffer, "echo ", 5)) {
+                        PathError(inputbuffer + 5);
+                        return 1;
+                    }
+                    for(int i = 6; i < inputlen; ++i)
+                        if(inputbuffer[i] == ' '){
+                            memset(inputcontent, 0 ,sizeof(inputcontent));
+                            echopos = InitEcho(inputbuffer + 6, inputcontent);
+                            if(echopos == -1) {
+                                PathError(inputbuffer);
+                                return 1;
+                            }
+                            return echo(inputbuffer + 6 + echopos, inputcontent);
+                    }
                 }
             }
             else if(inputlen == 4 && strcpy(inputbuffer, "exit"))
                 return EXITFLAG;
             else {
-                PathError(inputbuffer);
-                return 1;
+                CmdError(inputbuffer);
+                return 2;
                 }
         }
             break;
         case 'r':
         {
-            if(inputlen > 3 && strncmp(inputbuffer, "rm ", 3)) {
-                return rm(inputbuffer +3);
+            if(!IsCmdErr("rm", inputbuffer)) {
+                if(inputlen > 3 && strncmp(inputbuffer, "rm ", 3)) {
+                    return rm(inputbuffer +3);
+                }
+                else {
+                    PathError(inputbuffer + 3);
+                    return 1;
+                }
             }
-            else if(!(inputlen > 6) && strncmp(inputbuffer, "rmdir ", 6)) {
-                PathError(inputbuffer);
-                return 1;
+            else if(!IsCmdErr("rmdir", inputbuffer)) {
+                    if(!(inputlen > 6) && strncmp(inputbuffer, "rmdir ", 6)) {
+                        PathError(inputbuffer + 6);
+                        return 1;
+                }
+                else return rmdir(inputbuffer + 6);
             }
-            else return rmdir(inputbuffer + 6);
+            else {
+                CmdError(inputbuffer);
+                return 2;
+            }
         }
             break;
         default:
-            PathError(inputbuffer);
-            return 1;
+            CmdError(inputbuffer);
+            return 2;
             break;
     }
     
@@ -690,6 +743,5 @@ int WaitMessage()
 
 void debug()
 {
-    int *haha = NULL;
-    delete haha;
+    cout << "" << "ha" << endl;
 }
