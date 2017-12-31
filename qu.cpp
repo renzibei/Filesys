@@ -7,7 +7,7 @@ const int indbmp_size = 4096, blkbmp_size = 4096, inodes_size = inode_size * 409
 char inputbuffer[input_buffer_length];
 
 workdir_pathnode *pathhead = NULL;
-workdir_pathnode *wkpath   = NULL;
+workdir_pathnode *wkpath = NULL;
 workdir_pathnode *pathtail = NULL;
 workdir_pathnode *temphead = NULL;
 workdir_pathnode *tempwd   = NULL;
@@ -315,12 +315,9 @@ int FindPath(char path[], int inode_id,int type_find)
     if(!AnotherDir) {
         if(path_len == 0)
             son_inode_id = inode_id;
-       // if(type_find == 1)
-         //   NewWorkDirNode(inode_id, son_inode_id, relasondir);
         son_inode_id = FindSonPath(path, inode_id, relasondir);
 		if (type_find == 1 && son_inode_id != -1 )
             UpdatePath(path, inode_id, son_inode_id);
-            //NewWorkDirNode(inode_id, son_inode_id, relasondir);
         return son_inode_id;
     }
     strncpy(SonDirPath, path, AnoDirPos);
@@ -329,9 +326,8 @@ int FindPath(char path[], int inode_id,int type_find)
         return -1;
     if(inodes[son_inode_id].i_mode == 1)
         return -1;
-    if(type_find == 1 /*&& son_inode_id != 0*/) //需要改 考虑回退
+    if(type_find == 1)
         UpdatePath(SonDirPath, inode_id, son_inode_id);
-        //NewWorkDirNode(inode_id, son_inode_id, relasondir);
     return FindPath(path + AnoDirPos + 1, son_inode_id, type_find);
 }
 
@@ -339,7 +335,7 @@ int FindPath(char path[], int inode_id,int type_find)
 
 
 
-void FreeDirPath(workdir_pathnode *tempnode, int freemode = 0) //有错误
+void FreeDirPath(workdir_pathnode *tempnode, int freemode = 0)
 {
     for(workdir_pathnode *tpdir = tempnode; tpdir != NULL; tpdir = tempnode) {
         tempnode = tpdir->nextdir;
@@ -490,6 +486,26 @@ void InitTempWD(int initmode = 0)
     }
 }
 
+int GetAboPath(char *path)
+{
+    int pathlen = (int) strlen(path), dir_name_len = 0;
+    memset(path, 0, pathlen);
+    if(pathhead->nextdir == pathtail)
+        path[0] = '/';
+    else for(workdir_pathnode* itdir = pathhead; itdir->nextdir != NULL; itdir = itdir->nextdir) {
+        dir_name_len = (int) strlen(itdir->dirname);
+        if(itdir == wkpath) {
+            sprintf(path, "%s", itdir->dirname);
+            path += dir_name_len;
+        }
+        else {
+            sprintf(path, "%s/", itdir->dirname);
+            path += dir_name_len + 1;
+        }
+        
+    }
+    return 0;
+}
 
 int PrintWorkPath()
 {
@@ -560,7 +576,7 @@ int ListDirs(char path[])
     for(int i = 2; i < 16; ++i) {
         if(i > 3 && (i - 2) % 5 == 0)
             cout << endl;
-        fseek(vfs, DataBlkPos(tar_inodeid), SEEK_SET);
+        fseek(vfs, DataBlkPos(inodes[tar_inodeid].i_blocks[0]), SEEK_SET);
         fseek(vfs, DirsPos(i), SEEK_CUR);
         memset(dir_name, 0, sizeof(dir_name));
         fread(dir_name, sizeof(char), 252, vfs);

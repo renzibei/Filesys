@@ -12,6 +12,8 @@ struct workdir_pathnode{
     workdir_pathnode *prevdir;
 };
 
+extern workdir_pathnode *wkpath;
+
 #ifndef input_buffer_length
 #define input_buffer_length 4096
 #endif
@@ -20,6 +22,7 @@ extern char inputbuffer[input_buffer_length];
 int InitDisk();
 long DataBlkPos(int x);
 long inodesPos(int x);
+long DirsPos(int x); //返回第x子文件目录的相对位置
 void WriteDir(const char *dir_name, int relative_dir_entry_id, int dir_block_id, int son_dir_id);
 int WaitMessage();
 bool IsExit(int);
@@ -32,4 +35,6 @@ int UpdateInode(int x);
 int UpdateIndBmp(int inode_bmp_id);
 int UpdateBlkBmp(int block_bmp_id);
 void debug();
+int GetAboPath(char *path);
+int ChangeDir(char *path);
 #endif
