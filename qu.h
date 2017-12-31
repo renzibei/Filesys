@@ -37,4 +37,7 @@ int UpdateBlkBmp(int block_bmp_id);
 void debug();
 int GetAboPath(char *path);
 int ChangeDir(char *path);
+
+//成功创建返回0， 路径错误返回-1， 已存在返回-2, 子文件夹满了返回-3
+int MakeFolder(char path[]);
 #endif

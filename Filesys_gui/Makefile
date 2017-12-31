@@ -53,11 +53,13 @@ OBJECTS_DIR   = ./
 SOURCES       = main.cpp \
 		fileview.cpp \
 		../fu.cpp \
-		../qu.cpp moc_fileview.cpp
+		../qu.cpp qrc_pngsource.cpp \
+		moc_fileview.cpp
 OBJECTS       = main.o \
 		fileview.o \
 		fu.o \
 		qu.o \
+		qrc_pngsource.o \
 		moc_fileview.o
 DIST          = /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/spec_pre.prf \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/qdevice.pri \
@@ -455,6 +457,7 @@ Makefile: Filesys_gui.pro /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/macx-clang
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/yacc.prf \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/lex.prf \
 		Filesys_gui.pro \
+		pngsource.qrc \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/QtWidgets.prl \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtGui.framework/QtGui.prl \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtCore.framework/QtCore.prl
@@ -645,6 +648,7 @@ Makefile: Filesys_gui.pro /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/macx-clang
 /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/yacc.prf:
 /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/lex.prf:
 Filesys_gui.pro:
+pngsource.qrc:
 /Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/QtWidgets.prl:
 /Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtGui.framework/QtGui.prl:
 /Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtCore.framework/QtCore.prl:
@@ -677,6 +681,7 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
+	$(COPY_FILE) --parents pngsource.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents fileview.h ../filestruct.h ../Filesys.h ../fu.h ../qu.h $(DISTDIR)/
 	$(COPY_FILE) --parents main.cpp fileview.cpp ../fu.cpp ../qu.cpp $(DISTDIR)/
@@ -703,8 +708,15 @@ check: first
 
 benchmark: first
 
-compiler_rcc_make_all:
+compiler_rcc_make_all: qrc_pngsource.cpp
 compiler_rcc_clean:
+	-$(DEL_FILE) qrc_pngsource.cpp
+qrc_pngsource.cpp: pngsource.qrc \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/bin/rcc \
+		pngsources/filenew.png \
+		pngsources/folder.png
+	/Users/fanqu/Qt5.9.1/5.9.1/clang_64/bin/rcc -name pngsource pngsource.qrc -o qrc_pngsource.cpp
+
 compiler_moc_predefs_make_all: moc_predefs.h
 compiler_moc_predefs_clean:
 	-$(DEL_FILE) moc_predefs.h
@@ -741,7 +753,7 @@ compiler_yacc_impl_make_all:
 compiler_yacc_impl_clean:
 compiler_lex_make_all:
 compiler_lex_clean:
-compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean 
+compiler_clean: compiler_rcc_clean compiler_moc_predefs_clean compiler_moc_header_clean 
 
 ####### Compile
 
@@ -786,6 +798,9 @@ qu.o: ../qu.cpp ../qu.h \
 		../fu.h \
 		../filestruct.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qu.o ../qu.cpp
+
+qrc_pngsource.o: qrc_pngsource.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qrc_pngsource.o qrc_pngsource.cpp
 
 moc_fileview.o: moc_fileview.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_fileview.o moc_fileview.cpp

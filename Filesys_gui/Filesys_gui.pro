@@ -35,3 +35,6 @@ HEADERS += \
     ../Filesys.h \
     ../fu.h \
     ../qu.h
+
+RESOURCES += \
+    pngsource.qrc

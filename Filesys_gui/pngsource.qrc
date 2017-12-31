@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/new/icon">
+        <file>pngsources/filenew 3.png</file>
+        <file>pngsources/filenew 4.png</file>
+        <file>pngsources/filenew.png</file>
+        <file>pngsources/folder.png</file>
+        <file>pngsources/blue folder.png</file>
+    </qresource>
+</RCC>

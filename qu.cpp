@@ -106,9 +106,12 @@ void ExistedError(char path[])
     cout << path << " already existed." << endl;
 }
 
+void FullError()
+{
+    cout << "The Directory is full!" << endl;
+}
 
-
-int MakeDir(char path[])
+int MakeFolder(char path[])
 {
     int path_len = (int) strlen(path), divpos = -1, fat_inode = 0;
     char fat_path[input_buffer_length] = {0}, dir_name[253] = {0};
@@ -123,18 +126,18 @@ int MakeDir(char path[])
         strncpy(fat_path, path, divpos);
         fat_inode = GetPathInode(fat_path);
         if(fat_inode == -1) {
-            PathError(fat_path);
+            //PathError(fat_path);
             return -1;
         }
     }
 	strncpy(dir_name, path + divpos + 1, path_len - divpos -1);
     int rela_id = -1;
     if(FindSonPath(dir_name, fat_inode, rela_id) != -1) {
-        ExistedError(path);
+        //ExistedError(path);
         return -2;
     }
     if(rela_id == -1) {
-        cout << "The Directory is full!" << endl;
+       // cout << "The Directory is full!" << endl;
         return -3;
     }
     int new_dir_inode = find_free_indbmp();
@@ -149,6 +152,19 @@ int MakeDir(char path[])
     WriteDir(".", 0, new_blk_id, new_blk_id);
     WriteDir("..", 1, new_blk_id, fat_inode);
     return 0;
+        
+}
+
+int MakeDir(char path[])
+{
+    int judgestatus = MakeFolder(path);
+    if(judgestatus == -1)
+        PathError(path);
+    else if(judgestatus == -2)
+        ExistedError(path);
+    else if(judgestatus == -3)
+        FullError();
+    return judgestatus;
         
 }
 

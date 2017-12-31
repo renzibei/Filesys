@@ -4,12 +4,12 @@
 
 _super_block sbks;
 _inode inodes[4096];
-
+FileView *vfs_gui;
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    FileView w;
-    w.show();
+    vfs_gui = new FileView;
+    vfs_gui->show();
 
     return a.exec();
 }
