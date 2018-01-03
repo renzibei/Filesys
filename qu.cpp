@@ -737,7 +737,7 @@ int WaitMessage()
                                 PathError(inputbuffer);
                                 return 1;
                             }
-                            return echo(inputbuffer + 6 + echopos, inputcontent);
+                            return echo(inputbuffer + 7 + echopos, inputcontent);
                     }
                 }
             }

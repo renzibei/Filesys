@@ -110,7 +110,7 @@ int echo(char path[], char str[])//将str在写入path路径的文件
 	char str_name[252] = {0};//文件名
 	int UpDirPos = 0;
 	bool UpDir = 0;
-	for (int i = 251; i >= 0; i--){
+	for (int i = 10; i >= 0; i--){
 		if(path[i] == '/') {
 			UpDir = 1;
 			UpDirPos = i;
