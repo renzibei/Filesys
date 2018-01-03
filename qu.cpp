@@ -148,8 +148,8 @@ int MakeFolder(char path[])
     UpdateInode(new_dir_inode);
     sbks.block_bitmap[new_blk_id] = 1;
     UpdateBlkBmp(new_blk_id);
-    WriteDir(dir_name, rela_id, fat_inode, new_blk_id);
-    WriteDir(".", 0, new_blk_id, new_blk_id);
+    WriteDir(dir_name, rela_id, inodes[fat_inode].i_blocks[0], new_dir_inode);
+    WriteDir(".", 0, new_blk_id, new_dir_inode);
     WriteDir("..", 1, new_blk_id, fat_inode);
     return 0;
         
