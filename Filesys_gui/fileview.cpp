@@ -118,12 +118,12 @@ void FileView::showFileInfoList()
               QString fileName(dir_name);
                if (inodes[dir_entry_id].i_mode == 0)
               {
-                     QListWidgetItem * pTmp = new QListWidgetItem( QIcon( ":/new/icon/pngsources/folder.png" ), fileName );
+                     QListWidgetItem * pTmp = new QListWidgetItem( QIcon( ":/new/icon/pngsources/folder2.svg" ), fileName );
                      pListWidgetFile->addItem( pTmp );
               }
               else
               {
-                     QListWidgetItem * pTmp = new QListWidgetItem( QIcon( ":/new/icon/pngsources/filenew 4.png" ), fileName );
+                     QListWidgetItem * pTmp = new QListWidgetItem( QIcon( ":/new/icon/pngsources/file1.svg" ), fileName );
                      pListWidgetFile->addItem( pTmp );
               }
            }

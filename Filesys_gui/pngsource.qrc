@@ -5,5 +5,7 @@
         <file>pngsources/filenew.png</file>
         <file>pngsources/folder.png</file>
         <file>pngsources/blue folder.png</file>
+        <file>pngsources/folder2.svg</file>
+        <file>pngsources/file1.svg</file>
     </qresource>
 </RCC>
