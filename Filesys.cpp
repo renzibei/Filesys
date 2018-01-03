@@ -14,6 +14,7 @@ _inode inodes[4096];
 int main()
 {
     InitDisk();
+	
     for(;;) {
         if(IsExit(WaitMessage()))
             break;

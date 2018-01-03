@@ -51,6 +51,11 @@ int UpdateBlkBmp(int x)
 
 void WriteDir(const char *dir_name, int relative_dir_entry_id, int dir_block_id, int son_dir_id)
 {
+	cout << relative_dir_entry_id << " " << dir_block_id << " " << son_dir_id << endl;
+	for (int i = 0; i < 252; i++) {
+		cout << (int)dir_name[i];
+	}
+	cout << endl;
     FILE *vfs = fopen(filename,"rb+");
     fseek(vfs,DataBlkPos(dir_block_id),SEEK_SET);
     fseek(vfs,DirsPos(relative_dir_entry_id),SEEK_CUR);

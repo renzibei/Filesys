@@ -1,5 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "fu.h"
+/*
+#include "qu.cpp"
+#include "Filesys.h"
+#include "Filesys.cpp"
+*/
 /*const char filename[12] = "Filesys.vfs";
 const int inode_size = 32, datablk_size = 4096, dir_size = 256;
 const int indbmp_size = 4096, blkbmp_size = 4096, inodes_size = inode_size * 4096;
@@ -229,7 +234,7 @@ int delete_directory(int path_inode_id)//删除某inode_id的文件，path_inode_id<0代
 
 	_dir_block dirblock = get_dirblock(path_inode_id);
 	//删除子文件夹和子文件
-	for (int i = 3; i < 16; i++) {
+	for (int i = 2; i < 16; i++) {
 		
 		char* down_name = dirblock.dirs[i].name;
 		bool NotEmpty = false;
@@ -253,25 +258,32 @@ int delete_directory(int path_inode_id)//删除某inode_id的文件，path_inode_id<0代
 
 	char str[252] = { 0 };
 	for (int i = 0; i < 252; i++) {
-		str[i] = '\0';
+		str[i] = 0;
 	}//current here 12/12 11:38
 	int uppath_inode_id = inodes[path_inode_id].fat_id;
+	int uppath_block_id = inodes[uppath_inode_id].i_blocks[0];
+	int path_block_id = inodes[path_inode_id].i_blocks[0];
 	int path_position = find_position_dir_entry(path_inode_id);
 	if (path_position < 0) {//理论上这种情况不能出现，debug完毕后要删去
 		printf("Unexpected mistake happened");
 		return -1;
 	}
 	if (path_position >= 0) {
-		WriteDir(str, path_position, 0, uppath_inode_id);
+		for (int i = 0; i < 252; i++) {
+			cout << (int)str[i];
+		}
+		cout << endl;
+		WriteDir(str, path_position, uppath_inode_id, 0);
 	}
-	WriteDir(str, 1, 0, path_inode_id);
-	WriteDir(str, 0, 0, path_inode_id);//删除自身目录项的"." ".." 以及上一级文件夹目录项的"./name"
+	cout << path_inode_id << endl;
+	WriteDir(str, 1, path_inode_id, 0);
+	WriteDir(str, 0, path_inode_id, 0);//删除自身目录项的"." ".." 以及上一级文件夹目录项的"./name"
 
 	sbks.inode_bitmap[path_inode_id] = 0;
 	UpdateIndBmp(path_inode_id);
-	int path_block_id = inodes[path_inode_id].i_blocks[0];
+	cout << path_block_id << endl;
 	sbks.inode_bitmap[path_block_id] = 0;
-	UpdateIndBmp(path_block_id);//解除superblock占用状态
+	UpdateBlkBmp(path_block_id);//解除superblock占用状态
 
 	inodes[path_inode_id] = _inode(0, 0, 0, 0, 0);
 	UpdateInode(path_inode_id);//删除自身inode信息
