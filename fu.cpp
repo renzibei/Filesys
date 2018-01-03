@@ -53,7 +53,7 @@ _file_block get_fileblock(int inode_id)//´´½¨fileblock£¬¾¯¸æ£¬Ê¹ÓÃfileblockÇ°ĞèÒ
 
 void write_fileblock_into_file(char str[],int block_id)//ÔÚblock_idÉÏÊéĞ´str£¬¾¯¸æ£¬Ã¿´ÎÊ¹ÓÃÇ°Ğè±£Ö¤ÊÇÎÄ¼ş
 {
-	FILE *vfs = fopen(filename, "rb+");//mark
+	FILE *vfs = fopen(filename, "rb+");
 	long Position = DataBlkPos(block_id);
 	fseek(vfs, Position, SEEK_SET);
 	int lenstr = strlen(str);
@@ -211,7 +211,7 @@ int echo(char path[], char str[])//½«strÔÚĞ´ÈëpathÂ·¾¶µÄÎÄ¼ş£¬ĞèÇópathÒÔ'\0'½áÎ²
 
 	write_fileblock_into_file(full_str,inodes[str_inode_id].i_blocks[0]);//Ğ´Èëstr
 	delete[] path_up;
-	return 0;
+	return 0;//mark
 }
  
 int cat(char path[])//¶ÁÈ¡pathÂ·¾¶µÄÎÄ¼ş
