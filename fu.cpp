@@ -282,7 +282,7 @@ int delete_directory(int path_inode_id)//删除某inode_id的文件，path_inode_id<0代
 	sbks.inode_bitmap[path_inode_id] = 0;
 	UpdateIndBmp(path_inode_id);
 	cout << path_block_id << endl;
-	sbks.inode_bitmap[path_block_id] = 0;
+	sbks.block_bitmap[path_block_id] = 0;
 	UpdateBlkBmp(path_block_id);//解除superblock占用状态
 
 	inodes[path_inode_id] = _inode(0, 0, 0, 0, 0);
