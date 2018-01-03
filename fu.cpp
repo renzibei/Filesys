@@ -97,7 +97,7 @@ int find_position_dir_entry(int path_inode_id){//Î´¼ÓpathÅÐ¶Ï£¬¼´Ðè×ÔÐÐÅÐ¶Ïpath´
 	int uppath_inode_id = inodes[path_inode_id].fat_id;
 	_dir_block block1 = get_dirblock(uppath_inode_id);//ÕÒµ½block
 	int i = 0;
-	for (; (i < 16) && (block1.dirs[i].inode_id == path_inode_id); i++);
+	for (; (i < 16) && (block1.dirs[i].inode_id != path_inode_id); i++);
 	if (i==16){
 		return -1;
 	}
@@ -276,8 +276,8 @@ int delete_directory(int path_inode_id)//É¾³ýÄ³inode_idµÄÎÄ¼þ£¬path_inode_id<0´ú
 		WriteDir(str, path_position, uppath_inode_id, 0);
 	}
 	cout << path_inode_id << endl;
-	WriteDir(str, 1, path_inode_id, 0);
-	WriteDir(str, 0, path_inode_id, 0);//É¾³ý×ÔÉíÄ¿Â¼ÏîµÄ"." ".." ÒÔ¼°ÉÏÒ»¼¶ÎÄ¼þ¼ÐÄ¿Â¼ÏîµÄ"./name"
+	WriteDir(str, 1, path_block_id, 0);
+	WriteDir(str, 0, path_block_id, 0);//É¾³ý×ÔÉíÄ¿Â¼ÏîµÄ"." ".." ÒÔ¼°ÉÏÒ»¼¶ÎÄ¼þ¼ÐÄ¿Â¼ÏîµÄ"./name"
 
 	sbks.inode_bitmap[path_inode_id] = 0;
 	UpdateIndBmp(path_inode_id);
