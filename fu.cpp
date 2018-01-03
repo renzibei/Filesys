@@ -137,7 +137,7 @@ int echo(char path[], char str[])//将str在写入path路径的文件
 		printf("%s No such file or directory\n", path_up);
 		return -1;
 	}
-	if (inodes[upstr_inode_id].i_mode == 0){
+	if (inodes[upstr_inode_id].i_mode == 1){
 		printf("%s is not directory\n",path_up);
 		return -1;
 	}
@@ -275,13 +275,13 @@ int delete_directory(int path_inode_id)//删除某inode_id的文件，path_inode_id<0代
         cout << endl;*/
 		WriteDir(str, path_position, uppath_inode_id, 0);
 	}
-    //cout << path_inode_id << endl;
+    //cout << "path_inode_id " << path_inode_id << endl;
 	WriteDir(str, 1, path_block_id, 0);
 	WriteDir(str, 0, path_block_id, 0);//删除自身目录项的"." ".." 以及上一级文件夹目录项的"./name"
 
 	sbks.inode_bitmap[path_inode_id] = 0;
 	UpdateIndBmp(path_inode_id);
-    //cout << path_block_id << endl;
+    //cout << "path_block_id " << path_block_id << endl;
 	sbks.block_bitmap[path_block_id] = 0;
 	UpdateBlkBmp(path_block_id);//解除superblock占用状态
 
