@@ -96,6 +96,7 @@ int FindSonPath(char sonpath[],int inode_id, int &relasondir)
         fread(pathname, sizeof(char), 252, vfs);
         if(strcmp(sonpath, pathname) == 0) {
             fread(&dst_inode_id, sizeof(int), 1, vfs);
+            relasondir = i;
             return dst_inode_id;
 		}
         fread(&temp_inode_id, sizeof(int), 1, vfs);
@@ -589,18 +590,29 @@ int ChangeDir(char *path)
         DirError(path);
     return returnstatus;
 }
-/*
+
+
 int ReName(char path[], char AimedName[])
 {
-    srcInodeId = GetPathInode(path);
+    int srcInodeId = GetPathInode(path);
+    char SonName[252] = {0};
     if(srcInodeId < 0)
         return srcInodeId;
     else {
-        int fat_inodeid = inodes[SrcInodeId].fat_id;
-        WriteDir(AimedName,Get
+        GetSelfName(srcInodeId, SonName);
+        int fat_inodeid = inodes[srcInodeId].fat_id, rela_id = -1;
+        FindSonPath(SonName, fat_inodeid, rela_id);
+        WriteDir(AimedName, rela_id, inodes[fat_inodeid].i_blocks[0], srcInodeId);
     }
+    //char current_path[input_buffer_length] = {0};
+   // GetAboPath(current_path);
+    //GetPathInode(".", 1);
+    // update son fat
+    return 0;
 }
-*/
+
+
+
 int ListDirs(char path[])
 {
     FILE *vfs = fopen(filename, "rb");
@@ -628,6 +640,18 @@ int ListDirs(char path[])
     cout << endl;
     fclose(vfs);
     return 0;
+}
+
+int InitMv(char path[], char *inputcontent)
+{
+    int pathlen = (int) strlen(path), spacepos = -1;
+    for(int i = 0; i < pathlen - 1; ++i)
+        if(path[i] == ' ') {
+            spacepos = i;
+            strncpy(inputcontent, path + spacepos + 1, pathlen - spacepos - 1);
+            break;
+        }
+    return spacepos;
 }
 
 int InitEcho(char path[], char *inputcontent)
@@ -723,15 +747,36 @@ int WaitMessage()
             break;
         case 'm':
         {
-            if(IsCmdErr("mkdir", inputbuffer)) {
-                CmdError(inputbuffer);
-                return 2;
+            if(inputlen > 2 && inputbuffer[1] == 'k') {
+                if(IsCmdErr("mkdir", inputbuffer)) {
+                    CmdError(inputbuffer);
+                    return 2;
+                }
+                else if(!(inputlen > 6 && strncmp(inputbuffer, "mkdir ", 6) == 0)) {
+                    PathError(inputbuffer + 6);
+                    return 1;
+                }
+                return MakeDir(inputbuffer + 6);
             }
-            else if(!(inputlen > 6 && strncmp(inputbuffer, "mkdir ", 6) == 0)) {
-                PathError(inputbuffer + 6);
-                return 1;
+            else {
+                if(IsCmdErr("mv", inputbuffer)) {
+                    CmdError(inputbuffer);
+                    return 2;
+                }
+                else {
+                    memset(inputcontent, 0, sizeof(inputcontent));
+                    int SpacePos = InitMv(inputbuffer + 3, inputcontent);
+                    if(SpacePos == -1) {
+                        PathError(inputbuffer);
+                        return 1;
+                    }
+                    else {
+                        memset(inputbuffer + SpacePos + 3, 0, inputlen - SpacePos - 4);
+                        return ReName(inputbuffer + 3, inputcontent);
+                    }
+                    
+                }
             }
-            return MakeDir(inputbuffer + 6);
         }
             break;
         case 'e':
