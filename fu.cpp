@@ -269,19 +269,19 @@ int delete_directory(int path_inode_id)//删除某inode_id的文件，path_inode_id<0代
 		return -1;
 	}
 	if (path_position >= 0) {
-		for (int i = 0; i < 252; i++) {
+        /*for (int i = 0; i < 252; i++) {
 			cout << (int)str[i];
 		}
-		cout << endl;
+        cout << endl;*/
 		WriteDir(str, path_position, uppath_inode_id, 0);
 	}
-	cout << path_inode_id << endl;
+    //cout << path_inode_id << endl;
 	WriteDir(str, 1, path_block_id, 0);
 	WriteDir(str, 0, path_block_id, 0);//删除自身目录项的"." ".." 以及上一级文件夹目录项的"./name"
 
 	sbks.inode_bitmap[path_inode_id] = 0;
 	UpdateIndBmp(path_inode_id);
-	cout << path_block_id << endl;
+    //cout << path_block_id << endl;
 	sbks.block_bitmap[path_block_id] = 0;
 	UpdateBlkBmp(path_block_id);//解除superblock占用状态
 
