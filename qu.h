@@ -23,6 +23,7 @@ int InitDisk();
 long DataBlkPos(int x);
 long inodesPos(int x);
 long DirsPos(int x); //返回第x子文件目录的相对位置
+//WriteDir 第二个参数是子文件夹相对于父文件夹位置， 第二个参数是父文件夹的block_id，第三个参数是子文件夹的inode_id
 void WriteDir(const char *dir_name, int relative_dir_entry_id, int dir_block_id, int son_dir_id);
 int WaitMessage();
 bool IsExit(int);
