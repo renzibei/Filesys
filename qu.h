@@ -15,7 +15,7 @@ struct workdir_pathnode{
 extern workdir_pathnode *wkpath;
 
 #ifndef input_buffer_length
-#define input_buffer_length 4096
+#define input_buffer_length 1036036
 #endif
 extern char inputbuffer[input_buffer_length];
 

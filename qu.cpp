@@ -694,7 +694,14 @@ int WaitMessage()
     cout << ">> " ;
     memset(inputbuffer, 0, sizeof(inputbuffer));
    // cin >> inputbuffer;
-	cin.getline(inputbuffer, input_buffer_length);
+    string input_str;
+    getline(cin, input_str);
+	//cin.getline(inputbuffer, input_buffer_length);
+    if(input_str.length() >= input_buffer_length) {
+        cout << input_str << " : The path is too long" << endl;
+        return 9;
+    }
+    strncpy(inputbuffer, input_str.c_str(), input_str.length());
     //cout << endl;
     char inputcontent[input_buffer_length] = {0};
     int inputlen = (int) strlen(inputbuffer), echopos = -1;
@@ -714,7 +721,7 @@ int WaitMessage()
                 }
             }
             else if(!IsCmdErr("cat", inputbuffer)) {
-                    if(!(inputlen > 4 && strncmp(inputbuffer, "cat ", 4))) {
+                    if(!(inputlen > 4 && strncmp(inputbuffer, "cat ", 4) == 0)) {
                         PathError(inputbuffer + 4);
                         return 1;
                     }
@@ -783,18 +790,24 @@ int WaitMessage()
         {
             if(inputlen > 2 && inputbuffer[1] == 'c') {
                 if(!IsCmdErr("echo", inputbuffer)) {
-                    if(!(inputlen > 6) && strncmp(inputbuffer, "echo ", 5)) {
+                    if(!(inputlen > 6) && strncmp(inputbuffer, "echo ", 5) == 0) {
                         PathError(inputbuffer + 5);
                         return 1;
                     }
                     for(int i = 6; i < inputlen; ++i)
                         if(inputbuffer[i] == ' '){
                             memset(inputcontent, 0 ,sizeof(inputcontent));
+                            
 							cout << inputbuffer + 5 << endl;
                             echopos = InitEcho(inputbuffer + 5, inputcontent);
+                            int input_cnt_len = (int)strlen(inputcontent);
                             if(echopos == -1) {
                                 PathError(inputbuffer+5);
                                 return 1;
+                            }
+                            if(input_cnt_len > 4096) {
+                                cout << "The text is too long !" << endl;
+                                return 7;
                             }
 							return echo(inputbuffer + 6 + echopos, inputcontent);
                     }
@@ -811,7 +824,7 @@ int WaitMessage()
         case 'r':
         {
             if(!IsCmdErr("rm", inputbuffer)) {
-                if(inputlen > 3 && strncmp(inputbuffer, "rm ", 3)) {
+                if(inputlen > 3 && strncmp(inputbuffer, "rm ", 3) == 0) {
                     return rm(inputbuffer +3);
                 }
                 else {
@@ -820,7 +833,7 @@ int WaitMessage()
                 }
             }
             else if(!IsCmdErr("rmdir", inputbuffer)) {
-                    if(!(inputlen > 6) && strncmp(inputbuffer, "rmdir ", 6)) {
+                    if(!(inputlen > 6) && strncmp(inputbuffer, "rmdir ", 6) == 0) {
                         PathError(inputbuffer + 6);
                         return 1;
                 }
