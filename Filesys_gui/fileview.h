@@ -23,13 +23,16 @@ protected slots:
     void slotNewDir();
     void SentDirName();
     void slotCreateFolder();
+    void slotDelete();
 protected:
     void contextMenuEvent(QContextMenuEvent * event);
 
 private:
     QLineEdit *NameEdit;
     QDialog *NewNameD;
+    QListWidgetItem * toDeleteItem;
 };
+
 
 class FileView : public QDialog
 {
@@ -46,8 +49,8 @@ protected slots:
 private:
 
 
-       QLineEdit * pLineEditDir;
-       DirList * pListWidgetFile;
+       QLineEdit * WorkPathEdit;
+       DirList * FileListWidget;
        QPushButton * NewFolBtn;
        QPushButton * UpFolBtn;
        QPushButton * GoToBtn;

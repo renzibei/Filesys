@@ -7,16 +7,16 @@ FileView::FileView(QWidget *parent)
 {
     InitDisk();
     setWindowTitle( tr( "Virtual File System" ) );
-    pLineEditDir = new QLineEdit(this);
-    pLineEditDir->setText( tr( "/" ) );
+    WorkPathEdit = new QLineEdit(this);
+    WorkPathEdit->setText( tr( "/" ) );
     GoToBtn = new QPushButton;
     GoToBtn->setIcon(QIcon(":/new/icon/pngsources/right.svg"));
     connect(GoToBtn, SIGNAL(clicked()), this, SLOT(slotGoTo()));
-    QHBoxLayout * pHLayout1 = new QHBoxLayout;
-    pHLayout1->addWidget(pLineEditDir);
-    pHLayout1->addWidget(GoToBtn);
-    pListWidgetFile = new DirList(this);
-    pListWidgetFile->setViewMode(QListView::IconMode);
+    QHBoxLayout * h_layout1 = new QHBoxLayout;
+    h_layout1->addWidget(WorkPathEdit);
+    h_layout1->addWidget(GoToBtn);
+    FileListWidget = new DirList(this);
+    FileListWidget->setViewMode(QListView::IconMode);
     UpFolBtn = new QPushButton;
     //UpFolBtn->setFixedWidth(32);
     UpFolBtn->setIcon(QIcon(":/new/icon/pngsources/up.svg"));
@@ -24,16 +24,16 @@ FileView::FileView(QWidget *parent)
     NewFolBtn = new QPushButton;
     NewFolBtn->setText(tr("新建文件夹"));
     //NewFolBtn->setFixedHeight(40);
-    connect(NewFolBtn, SIGNAL(clicked()), pListWidgetFile, SLOT(slotNewDir()));
-    QHBoxLayout * pHLayout2 = new QHBoxLayout;
-    pHLayout2->addWidget(NewFolBtn);
-    pHLayout2->addWidget(UpFolBtn);
-    QVBoxLayout * pVLayout = new QVBoxLayout(this);
-    pVLayout->addLayout(pHLayout1);
-    pVLayout->addLayout(pHLayout2);
-    pVLayout->addWidget( pListWidgetFile );
-    this->setLayout(pVLayout);
-    connect( pListWidgetFile, SIGNAL( itemDoubleClicked( QListWidgetItem * ) ), this, SLOT( slotShowDir( QListWidgetItem * ) ) );
+    connect(NewFolBtn, SIGNAL(clicked()), FileListWidget, SLOT(slotNewDir()));
+    QHBoxLayout * h_layout2 = new QHBoxLayout;
+    h_layout2->addWidget(NewFolBtn);
+    h_layout2->addWidget(UpFolBtn);
+    QVBoxLayout * v_layout = new QVBoxLayout(this);
+    v_layout->addLayout(h_layout1);
+    v_layout->addLayout(h_layout2);
+    v_layout->addWidget( FileListWidget );
+    this->setLayout(v_layout);
+    connect( FileListWidget, SIGNAL( itemDoubleClicked( QListWidgetItem * ) ), this, SLOT( slotShowDir( QListWidgetItem * ) ) );
     showFileInfoList();
 
 }
@@ -64,9 +64,36 @@ void DirList::contextMenuEvent( QContextMenuEvent * event )
     if(this->itemAt(mapFromGlobal(QCursor::pos())) != NULL)
     {
         popMenu->addAction(delete_action);
+        toDeleteItem = this->itemAt(mapFromGlobal(QCursor::pos()));
     }
     connect(add_folder_action, SIGNAL(triggered()), this, SLOT(slotNewDir()));
+    connect(delete_action, SIGNAL(triggered()), this, SLOT(slotDelete()));
     popMenu->exec(QCursor::pos()); // 菜单出现的位置为当前鼠标的位置
+}
+
+void DirList::slotDelete()
+{
+    //QMessageBox::information(vfs_gui, "", "正常");
+    QByteArray filePathStr = toDeleteItem->text().toLatin1();
+    char *filePath = filePathStr.data();
+    /*
+    QString debugtext(filePath);
+    QMessageBox::information(vfs_gui, "", debugtext);
+
+    debugtext.setNum(d_inodeid);
+    QMessageBox::information(vfs_gui, "", debugtext);
+    */
+    int d_inodeid = GetPathInode(filePath);
+    if(d_inodeid < 0) {
+        QMessageBox::critical(this, "", "文件不存在");
+    }
+    int status_value = -2;
+    if(inodes[d_inodeid].i_mode == 0)
+        status_value = delete_directory(d_inodeid);
+    else
+        status_value = delete_file(d_inodeid);
+    if(status_value < 0)
+        QMessageBox::critical(this, "", "删除失败");
 }
 
 void DirList::SentDirName()
@@ -89,19 +116,7 @@ void DirList::slotNewDir()
     NewNameD->setLayout(nameLayout);
     NewNameD->show();
     connect(finishBtn, SIGNAL(clicked()), this, SLOT(slotCreateFolder()));
-
-    //connect(finishBtn, SIGNAL(clicked()), this, )
 }
-/*
-StandardButton QMessageBox::information
-(
-    QWidget* parent,
-    const QString &title,
-    const QString& text,
-    StandardButtons button=Ok,
-    StandardButton defaultButton=NoButton
-
-);*/
 
 
 void DirList::slotCreateFolder()
@@ -112,7 +127,7 @@ void DirList::slotCreateFolder()
     if(createstatus == -1)
         QMessageBox::critical(this, "", tr("文件不存在"));
     else if(createstatus == -2)
-        QMessageBox::critical(this, "", tr("文件已存在"));
+        QMessageBox::warning(this, "", tr("文件已存在"));
     else if(createstatus == -3)
         QMessageBox::critical(this, "", tr("文件夹已满"));
     NewNameD->close();
@@ -121,7 +136,7 @@ void DirList::slotCreateFolder()
 
 void FileView::slotGoTo()
 {
-    QByteArray pathStr = pLineEditDir->text().toLatin1();
+    QByteArray pathStr = WorkPathEdit->text().toLatin1();
     char *path = pathStr.data();
     int GoToStatus = GetPathInode(path, 1);
     if(GoToStatus == -1)
@@ -136,14 +151,13 @@ void FileView::showFileInfoList()
     char abopath[input_buffer_length] = {0};
     GetAboPath(abopath);
     QString Qabopath(abopath);
-    pLineEditDir->setText( Qabopath );
-    pListWidgetFile->clear();
+    WorkPathEdit->setText( Qabopath );
+    FileListWidget->clear();
     FILE *vfs = fopen(filename, "rb");
     char dir_name[253] = {0};
     int dir_entry_id = -1;
     for (int i = 0; i < 16; ++i)
     {
-           //QFileInfo tmpFileInfo = list.at( i );
         fseek(vfs, DataBlkPos(inodes[wkpath->dir_inode].i_blocks[0]), SEEK_SET);
         fseek(vfs, DirsPos(i), SEEK_CUR);
         memset(dir_name, 0, sizeof(dir_name));
@@ -153,11 +167,11 @@ void FileView::showFileInfoList()
             QString fileName(dir_name);
             if (inodes[dir_entry_id].i_mode == 0) {
                 QListWidgetItem * pTmp = new QListWidgetItem( QIcon( ":/new/icon/pngsources/folder2.svg" ), fileName );
-                pListWidgetFile->addItem( pTmp );
+                FileListWidget->addItem( pTmp );
             }
             else {
                 QListWidgetItem * pTmp = new QListWidgetItem( QIcon( ":/new/icon/pngsources/file1.svg" ), fileName );
-                pListWidgetFile->addItem( pTmp );
+                FileListWidget->addItem( pTmp );
             }
         }
     }
@@ -174,14 +188,7 @@ void FileView::slotShowDir( QListWidgetItem * item )
        QString str = item->text();
        QByteArray latinstr = str.toLatin1();
        char *subDir = latinstr.data();
-
        ChangeDir(subDir);
-
-       //dir.setPath( pLineEditDir->text() );
-       //dir.cd( str );
-
-
-
        showFileInfoList();
 }
 

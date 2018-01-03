@@ -713,8 +713,11 @@ compiler_rcc_clean:
 	-$(DEL_FILE) qrc_pngsource.cpp
 qrc_pngsource.cpp: pngsource.qrc \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/bin/rcc \
+		pngsources/up.svg \
 		pngsources/filenew.png \
-		pngsources/folder.png
+		pngsources/folder2.svg \
+		pngsources/file1.svg \
+		pngsources/right.svg
 	/Users/fanqu/Qt5.9.1/5.9.1/clang_64/bin/rcc -name pngsource pngsource.qrc -o qrc_pngsource.cpp
 
 compiler_moc_predefs_make_all: moc_predefs.h
@@ -732,6 +735,16 @@ moc_fileview.cpp: /Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/He
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qlineedit.h \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QDialog \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qdialog.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QPushButton \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qpushbutton.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QMenu \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qmenu.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtGui.framework/Headers/QContextMenuEvent \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtGui.framework/Headers/qevent.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QLabel \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qlabel.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QMessageBox \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qmessagebox.h \
 		../Filesys.h \
 		../qu.h \
 		../fu.h \
@@ -764,6 +777,16 @@ main.o: main.cpp fileview.h \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qlineedit.h \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QDialog \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qdialog.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QPushButton \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qpushbutton.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QMenu \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qmenu.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtGui.framework/Headers/QContextMenuEvent \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtGui.framework/Headers/qevent.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QLabel \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qlabel.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QMessageBox \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qmessagebox.h \
 		../Filesys.h \
 		../qu.h \
 		../fu.h \
@@ -779,6 +802,16 @@ fileview.o: fileview.cpp fileview.h \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qlineedit.h \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QDialog \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qdialog.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QPushButton \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qpushbutton.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QMenu \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qmenu.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtGui.framework/Headers/QContextMenuEvent \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtGui.framework/Headers/qevent.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QLabel \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qlabel.h \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/QMessageBox \
+		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/lib/QtWidgets.framework/Headers/qmessagebox.h \
 		../Filesys.h \
 		../qu.h \
 		../fu.h \
