@@ -31,7 +31,19 @@ int GetWorkDir();
 int GetPathInode(char path[], int type_judge = 0);
 int FindPath(char path[], int inode_id,int type_find = 0);
 void PathError(char path[]);
-void PathError(char path[]);
+//文件已存在报错
+void ExistedError(char path[]);
+//文件已满报错
+void FullError();
+//文件名超长报错
+void NameLongError();
+//命令错误报错
+void CmdError(char cmds[]);
+//不是目录报错
+void DirError(char path[]);
+//文件不存在报错
+void NoExistedErr(char path[]);
+
 int UpdateInode(int x);
 int UpdateIndBmp(int inode_bmp_id);
 int UpdateBlkBmp(int block_bmp_id);

@@ -601,14 +601,17 @@ int ChangeDir(char *path)
     return returnstatus;
 }
 
-
+//返回10代表已存在
 int ReName(char path[], char AimedName[])
 {
     int srcInodeId = GetPathInode(path);
     char SonName[252] = {0};
+    int TempInode = GetPathInode(AimedName);
     if(srcInodeId < 0)
         return srcInodeId;
     else {
+        if(TempInode != srcInodeId && TempInode > 0)
+            return -10;
         GetSelfName(srcInodeId, SonName);
         int fat_inodeid = inodes[srcInodeId].fat_id, rela_id = -1;
         FindSonPath(SonName, fat_inodeid, rela_id);
@@ -621,6 +624,21 @@ int ReName(char path[], char AimedName[])
     return 0;
 }
 
+void NoExistedErr(char path[])
+{
+    cout << path << " No such file or directory." << endl;
+}
+
+int mv(char path[], char AimedName[])
+{
+    int tempstatus = ReName(path, AimedName);
+    if(tempstatus < 0) {
+        NoExistedErr(path);
+        return -11;
+    }
+    return 0;
+    
+}
 
 
 int ListDirs(char path[])
@@ -789,7 +807,7 @@ int WaitMessage()
                     }
                     else {
                         memset(inputbuffer + SpacePos + 3, 0, inputlen - SpacePos - 4);
-                        return ReName(inputbuffer + 3, inputcontent);
+                        return mv(inputbuffer + 3, inputcontent);
                     }
                     
                 }
