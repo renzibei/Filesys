@@ -40,7 +40,7 @@ class FileView : public QDialog
 
 public:
     FileView(QWidget *parent = 0);
-    void showFileInfoList();
+    void UpdateFileList();
     ~FileView();
 protected slots:
     void slotShowDir(QListWidgetItem * item);

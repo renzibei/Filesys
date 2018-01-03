@@ -34,7 +34,7 @@ FileView::FileView(QWidget *parent)
     v_layout->addWidget( FileListWidget );
     this->setLayout(v_layout);
     connect( FileListWidget, SIGNAL( itemDoubleClicked( QListWidgetItem * ) ), this, SLOT( slotShowDir( QListWidgetItem * ) ) );
-    showFileInfoList();
+    UpdateFileList();
 
 }
 
@@ -94,6 +94,8 @@ void DirList::slotDelete()
         status_value = delete_file(d_inodeid);
     if(status_value < 0)
         QMessageBox::critical(this, "", "删除失败");
+    vfs_gui->UpdateFileList();
+
 }
 
 void DirList::SentDirName()
@@ -131,7 +133,7 @@ void DirList::slotCreateFolder()
     else if(createstatus == -3)
         QMessageBox::critical(this, "", tr("文件夹已满"));
     NewNameD->close();
-    vfs_gui->showFileInfoList();
+    vfs_gui->UpdateFileList();
 }
 
 void FileView::slotGoTo()
@@ -143,10 +145,10 @@ void FileView::slotGoTo()
         QMessageBox::critical(this, "", tr("路径错误"));
     else if(inodes[GoToStatus].i_mode == 1)
         QMessageBox::critical(this, "", tr("目标是文件"));
-    showFileInfoList();
+    UpdateFileList();
 }
 
-void FileView::showFileInfoList()
+void FileView::UpdateFileList()
 {
     char abopath[input_buffer_length] = {0};
     GetAboPath(abopath);
@@ -189,11 +191,11 @@ void FileView::slotShowDir( QListWidgetItem * item )
        QByteArray latinstr = str.toLatin1();
        char *subDir = latinstr.data();
        ChangeDir(subDir);
-       showFileInfoList();
+       UpdateFileList();
 }
 
 void FileView::slotGoUpDIr()
 {
     GetPathInode("..",1);
-    showFileInfoList();
+    UpdateFileList();
 }
