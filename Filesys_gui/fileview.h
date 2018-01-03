@@ -41,14 +41,16 @@ public:
     ~FileView();
 protected slots:
     void slotShowDir(QListWidgetItem * item);
-
-
+    void slotGoUpDIr();
+    void slotGoTo();
 private:
 
 
        QLineEdit * pLineEditDir;
        DirList * pListWidgetFile;
        QPushButton * NewFolBtn;
+       QPushButton * UpFolBtn;
+       QPushButton * GoToBtn;
 };
 
 extern FileView* vfs_gui;
