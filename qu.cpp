@@ -121,6 +121,11 @@ void FullError()
     cout << "The Directory is full!" << endl;
 }
 
+void NameLongError()
+{
+    cout << "The Name should be no longer than 251 chars!" << endl;
+}
+
 int MakeFolder(char path[])
 {
     int path_len = (int) strlen(path), divpos = -1, fat_inode = 0;
@@ -141,6 +146,9 @@ int MakeFolder(char path[])
         }
     }
 	strncpy(dir_name, path + divpos + 1, path_len - divpos -1);
+    if(dir_name[252] != '\0')
+        return -4;
+        
     int rela_id = -1;
     if(FindSonPath(dir_name, fat_inode, rela_id) != -1) {
         //ExistedError(path);
@@ -174,6 +182,8 @@ int MakeDir(char path[])
         ExistedError(path);
     else if(judgestatus == -3)
         FullError();
+    else if(judgestatus == -4)
+        NameLongError();
     return judgestatus;
         
 }
