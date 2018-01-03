@@ -660,7 +660,7 @@ int InitEcho(char path[], char *inputcontent)
     for(int i = 0; i < pathlen - 1; ++i)
         if(path[i] == ' ') {
             spacepos = i;
-            strncpy(inputcontent, path, i + 1);
+            strncpy(inputcontent, path, i);
             break;
     }
     return spacepos;
@@ -790,12 +790,13 @@ int WaitMessage()
                     for(int i = 6; i < inputlen; ++i)
                         if(inputbuffer[i] == ' '){
                             memset(inputcontent, 0 ,sizeof(inputcontent));
-                            echopos = InitEcho(inputbuffer + 6, inputcontent);
+							cout << inputbuffer + 5 << endl;
+                            echopos = InitEcho(inputbuffer + 5, inputcontent);
                             if(echopos == -1) {
-                                PathError(inputbuffer);
+                                PathError(inputbuffer+5);
                                 return 1;
                             }
-                            return echo(inputbuffer + 7 + echopos, inputcontent);
+							return echo(inputbuffer + 6 + echopos, inputcontent);
                     }
                 }
             }
