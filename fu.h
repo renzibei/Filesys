@@ -5,17 +5,27 @@
 extern const char filename[12];
 extern const int inode_size,datablk_size, dir_size, indbmp_size, blkbmp_size, inodes_size;
 
+_dir_block get_dirblock(int inode_id);//创建dirblock，警告，使用前需要判断是否为目录，且需要保证目录名<252 
+_file_block get_fileblock(int inode_id);//创建fileblock，警告，使用fileblock前需要判断是否为文件，且需要保障文件名大小<252
+void write_fileblock_into_file(char str[], int block_id);//在block_id上书写str，警告，每次使用前需保证是文件
+
 void BlockFullError();//block块已满
 void InodeFullError();//inode块已满
 void FileError(char path[]);//非文件错误
+
 int find_free_indbmp();
 int find_free_blkbmp();
-int cat(char path[]);
-int rm(char path[]);
-int rmdir(char path[]);
+int find_free_dir_entry(int inode_id, char path[]);
+int find_position_dir_entry(int path_inode_id);
+
+int cat(char path[]);//读取path路径的文件，-2不存在，-1目录，0成功
+int DoCat(char path[]);
+int rm(char path[]);//删除path路径的文件，-2不存在，-1目录，0成功
+int rmdir(char path[]);//删除path路径的目录，-2不存在，-1文件，0成功
 int echo(char path[], char str[]);
-int delete_directory(int path_inode_id);//删除某inode_id的文件，path_inode_id<0代表不存在，返回-2；若是文件（而非文件夹）返回-1
-int delete_file(int path_inode_id);//删除某inode_id的文件，已加判断path是否为文件夹，需自行判断path存在且uppath为文件夹
+int delete_directory(int path_inode_id);//删除某inode_id的目录，-2不存在，-1文件，0成功
+int delete_file(char path[]);//删除某inode_id的文件，-2不存在，-1文件夹，0成功
+int delete_file(int path_inode_id);//删除某inode_id的文件，-2不存在，-1文件夹，0成功
 #endif
 
 

@@ -37,7 +37,7 @@ void write_fileblock_into_file(char str[],int block_id)//ÔÚblock_idÉÏÊéĞ´str£¬¾¯
 	FILE *vfs = fopen(filename, "rb+");
 	long Position = DataBlkPos(block_id);
 	fseek(vfs, Position, SEEK_SET);
-	int lenstr = strlen(str);
+	int lenstr = (int)strlen(str);
 	if (lenstr > 4096) {
 		lenstr = 4096;
 	}
@@ -79,7 +79,7 @@ int find_free_blkbmp(){
 	}
 	return i;
 }
-int find_free_dir_entry(int inode_id, char path[]){
+int find_free_dir_entry(int inode_id, char path[]) {
 	if (inodes[inode_id].i_mode == 1){
 		return -2;
 	}
@@ -92,7 +92,8 @@ int find_free_dir_entry(int inode_id, char path[]){
 	}
 	return i;
 }
-int find_position_dir_entry(int path_inode_id){//Î´¼ÓpathÅĞ¶Ï£¬¼´Ğè×ÔĞĞÅĞ¶Ïpath´æÔÚÇÒuppathÎªÎÄ¼ş¼Ğ
+
+int find_position_dir_entry(int path_inode_id){//Î´¼ÓpathÅĞ¶Ï£¬¼´Ğè×ÔĞĞÅĞ¶Ïpath´æÔÚ
 	int uppath_inode_id = inodes[path_inode_id].fat_id;
 	_dir_block block1 = get_dirblock(uppath_inode_id);//ÕÒµ½block
 	int i = 0;
@@ -105,7 +106,7 @@ int find_position_dir_entry(int path_inode_id){//Î´¼ÓpathÅĞ¶Ï£¬¼´Ğè×ÔĞĞÅĞ¶Ïpath´
 
 int echo(char path[], char str[])//½«strÔÚĞ´ÈëpathÂ·¾¶µÄÎÄ¼ş£¬ĞèÇópathÒÔ'\0'½áÎ²£¬strËæÒâ
 {
-	int tmplen = strlen(path);//Â·¾¶³¤¶È
+	int tmplen = (int)strlen(path);//Â·¾¶³¤¶È
 	char str_name[252] = {0};//ÎÄ¼şÃû
 	int UpDirPos = -1;//ÉÏ¼¶Ä¿Â¼Â·¾¶ÖÕÖ¹Î»ÖÃ£¬¼´'/'Î»ÖÃ
 	bool flag = 0;//ÎÄ¼şÎª±ê×¼¸ñÊ½"a/b/c"»ò·Ç±ê×¼¸ñÊ½"a"(Ïàµ±ÓÚ"./a")Ç°ÕßÎª1£¬ºóÕß0
@@ -197,25 +198,51 @@ int echo(char path[], char str[])//½«strÔÚĞ´ÈëpathÂ·¾¶µÄÎÄ¼ş£¬ĞèÇópathÒÔ'\0'½áÎ²
 	}//À©Õ¹strµ½±ê×¼³¤¶È
 	write_fileblock_into_file(full_str,inodes[str_inode_id].i_blocks[0]);//Ğ´Èëstr
 	delete[] path_up;
-	return 0;//mark
+	return 0;
 }
  
-int cat(char path[])//¶ÁÈ¡pathÂ·¾¶µÄÎÄ¼ş
+int cat(char path[]) {//¶ÁÈ¡pathÂ·¾¶µÄÎÄ¼ş£¬-2²»´æÔÚ£¬-1Ä¿Â¼£¬0³É¹¦
+	int i = DoCat(path);
+	if (i == -2) {
+		PathError(path);
+	}
+	else if (i == -1) {
+		FileError(path);
+	}
+	return i;
+}
+
+int DoCat(char path[])//¶ÁÈ¡pathÂ·¾¶µÄÎÄ¼ş£¬-2²»´æÔÚ£¬-1Ä¿Â¼£¬0³É¹¦
 {
 	int str_inode_id = GetPathInode(path); 
 	if (str_inode_id<0){
-		printf("%s No such file or directory\n",path);
-		return -1;
+		return -2;
 	}//Â·¾¶²»´æÔÚ
 	if (inodes[str_inode_id].i_mode == 0) {
-		printf("%s is not a file\n", path);
 		return -1;
-	}//Â·¾¶ÎªÎÄ¼ş¼Ğ
-	printf("%s\n",get_fileblock(str_inode_id).data);
+	}//Â·¾¶ÎªÄ¿Â¼
+	_file_block block = get_fileblock(str_inode_id);
+	char data[4097];
+	int i = 0;
+	for (; i < 4096 && block.data[i] != '\0'; i++) {
+		data[i] = block.data[i];
+	}
+	data[i] = '\0';
+	printf("%s\n",data);
 	return 0;
 }
-int delete_file(int path_inode_id)//É¾³ıÄ³inode_idµÄÎÄ¼ş£¬ÒÑ¼ÓÅĞ¶ÏpathÊÇ·ñÎªÎÄ¼ş¼Ğ£¬Ğè×ÔĞĞÅĞ¶Ïpath´æÔÚÇÒuppathÎªÎÄ¼ş¼Ğ
+
+int delete_file(char path[]) {//É¾³ıÄ³inode_idµÄÎÄ¼ş£¬-2²»´æÔÚ£¬-1ÎÄ¼ş¼Ğ£¬0³É¹¦
+	int path_inode_id = GetPathInode(path);
+	int i = delete_file(path_inode_id);
+	return i;
+}
+
+int delete_file(int path_inode_id)//É¾³ıÄ³inode_idµÄÎÄ¼ş£¬-2²»´æÔÚ£¬-1ÎÄ¼ş¼Ğ£¬0³É¹¦
 {
+	if (path_inode_id<0) {
+		return -2;
+	}//Â·¾¶²»´æÔÚ
 	if (inodes[path_inode_id].i_mode == 0) {
 		return -1;
 	}//Â·¾¶ÎªÎÄ¼ş¼Ğ
@@ -227,22 +254,27 @@ int delete_file(int path_inode_id)//É¾³ıÄ³inode_idµÄÎÄ¼ş£¬ÒÑ¼ÓÅĞ¶ÏpathÊÇ·ñÎªÎÄ¼ş
 	sbks.block_bitmap[path_block_id] = 0;
 	UpdateBlkBmp(path_inode_id);//ÖØÖÃpath¶ÔÓ¦µÄblock_bitmap
 
-	char str[252] = { 0 };
-	for (int i = 0; i < 252; i++) {
+	char str[4096];
+	for (int i = 0; i < 4096; i++) {
 		str[i] = '\0';
 	}
 	write_fileblock_into_file(str, path_block_id);//É¾³ıpathµÄblock
 
+	char file_name[252];
+	for (int i = 0; i < 252; i++) {
+		file_name[i] = '\0';
+	}
 	int uppath_inode_id = inodes[path_block_id].fat_id;
 	int dir_id = find_position_dir_entry(path_inode_id);
-	WriteDir(str, dir_id, 0, uppath_inode_id);//É¾³ıpath¶ÔÓ¦µÄdir_entry
+	WriteDir(file_name, dir_id, uppath_inode_id, 0);//É¾³ıpath¶ÔÓ¦µÄdir_entry
 
 	inodes[path_inode_id] = _inode(0, 0, 0, 0, 0);
 	UpdateInode(path_inode_id);//É¾³ıpathµÄinode
+
 	return 0;
 }
 
-int delete_directory(int path_inode_id)//É¾³ıÄ³inode_idµÄÎÄ¼ş£¬path_inode_id<0´ú±í²»´æÔÚ£¬·µ»Ø-2£»ÈôÊÇÎÄ¼ş£¨¶ø·ÇÎÄ¼ş¼Ğ£©·µ»Ø-1
+int delete_directory(int path_inode_id)//É¾³ıÄ³inode_idµÄÄ¿Â¼£¬-2²»´æÔÚ£¬-1ÎÄ¼ş£¬0³É¹¦
 {
 	if (path_inode_id < 0) {
 		return -2;
@@ -278,12 +310,12 @@ int delete_directory(int path_inode_id)//É¾³ıÄ³inode_idµÄÎÄ¼ş£¬path_inode_id<0´ú
 	char str[252] = { 0 };
 	for (int i = 0; i < 252; i++) {
 		str[i] = 0;
-	}//current here 12/12 11:38
+	}
 	int uppath_inode_id = inodes[path_inode_id].fat_id;
 	int uppath_block_id = inodes[uppath_inode_id].i_blocks[0];
 	int path_block_id = inodes[path_inode_id].i_blocks[0];
 	int path_position = find_position_dir_entry(path_inode_id);
-	if (path_position < 0) {//ÀíÂÛÉÏÕâÖÖÇé¿ö²»ÄÜ³öÏÖ£¬debugÍê±ÏºóÒªÉ¾È¥
+	if (path_position < 0) {
 		printf("Unexpected mistake happened");
 		return -1;
 	}
@@ -310,32 +342,24 @@ int delete_directory(int path_inode_id)//É¾³ıÄ³inode_idµÄÎÄ¼ş£¬path_inode_id<0´ú
 	return 0;
 }
 
-
-
-int rm(char path[])//É¾³ıpathÂ·¾¶µÄÎÄ¼ş 
+int rm(char path[])//É¾³ıpathÂ·¾¶µÄÎÄ¼ş£¬-2²»´æÔÚ£¬-1Ä¿Â¼£¬0³É¹¦ 
 {
-	int path_inode_id = GetPathInode(path);
-	if (path_inode_id < 0) {
-		PathError(path);
-		return -1;
-	}
-	int i = delete_file(path_inode_id);//ÕâÀï×ÔÈ»path´æÔÚ£¬uppath´æÔÚÇÒÊÇÎÄ¼ş¼Ğ
-	if (i < 0) {
-		printf("%s is not a file\n", path);
+	int i = delete_file(path);
+	if (i == -1) {
+
 	}
 	return i;
 }
 
-int rmdir(char path[])//É¾³ıpathÂ·¾¶µÄÎÄ¼ş¼Ğ
+int rmdir(char path[])//É¾³ıpathÂ·¾¶µÄÄ¿Â¼£¬-2²»´æÔÚ£¬-1ÎÄ¼ş£¬0³É¹¦
 {
 	int path_inode_id = GetPathInode(path);
 	int i = delete_directory(path_inode_id);
-	if (i < 0) {
-		if (i == -2)
-			printf("%s No such file or directory\n", path);
-		if (i == -1)
-			printf("%s is not a directory\n", path);
-		return -1;
+	if (i == -2) {
+		printf("%s No such file or directory\n", path);
+	}
+	if (i == -1) {
+		printf("%s is not a directory\n", path);
 	}
 	return i;
 }
