@@ -19,7 +19,7 @@ int find_free_dir_entry(int inode_id, char path[]);
 int find_position_dir_entry(int path_inode_id);
 
 int cat(char path[]);//读取path路径的文件，-2不存在，-1目录，0成功
-int DoCat(char path[]);//cat内核
+int DoCat(char path[], char data[]);//cat内核，对于路径path，修改data为path的数据，返回值-2不存在，-1目录，0成功
 
 int rm(char path[]);//删除path路径的文件，-2不存在，-1目录，0成功
 int rmdir(char path[]);//删除path路径的目录，-2不存在，-1文件，0成功

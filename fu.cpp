@@ -207,17 +207,21 @@ int DoEcho(char path[], char str[])//echoÄÚºË
 }
  
 int cat(char path[]) {//¶ÁÈ¡pathÂ·¾¶µÄÎÄ¼ş£¬-2²»´æÔÚ£¬-1Ä¿Â¼£¬0³É¹¦
-	int i = DoCat(path);
+	char str[4097];
+	int i = DoCat(path, str);
 	if (i == -2) {
 		PathError(path);
 	}
 	else if (i == -1) {
 		FileError(path);
 	}
+	else {
+		printf("%s\n", str);
+	}
 	return i;
 }
 
-int DoCat(char path[])//catÄÚºË
+int DoCat(char path[],char data[])//catÄÚºË£¬¶ÔÓÚÂ·¾¶path£¬ĞŞ¸ÄdataÎªpathµÄÊı¾İ£¬·µ»ØÖµ-2²»´æÔÚ£¬-1Ä¿Â¼£¬0³É¹¦
 {
 	int str_inode_id = GetPathInode(path); 
 	if (str_inode_id<0){
@@ -227,13 +231,11 @@ int DoCat(char path[])//catÄÚºË
 		return -1;
 	}//Â·¾¶ÎªÄ¿Â¼
 	_file_block block = get_fileblock(str_inode_id);
-	char data[4097];
 	int i = 0;
 	for (; i < 4096 && block.data[i] != '\0'; i++) {
 		data[i] = block.data[i];
 	}
 	data[i] = '\0';
-	printf("%s\n",data);
 	return 0;
 }
 
@@ -350,8 +352,11 @@ int delete_directory(int path_inode_id)//É¾³ıÄ³inode_idµÄÄ¿Â¼£¬-2²»´æÔÚ£¬-1ÎÄ¼ş£
 int rm(char path[])//É¾³ıpathÂ·¾¶µÄÎÄ¼ş£¬-2²»´æÔÚ£¬-1Ä¿Â¼£¬0³É¹¦ 
 {
 	int i = delete_file(path);
+	if (i == -2) {
+		PathError(path);
+	}
 	if (i == -1) {
-
+		FileError(path);
 	}
 	return i;
 }
