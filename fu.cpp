@@ -4,7 +4,7 @@
 //×¢Òâ£¬WriteDirº¯ÊıÖĞĞ´Èëdir_nameÃ»ÓĞ°ÑºóÃæ²¹È«'\0' 
 //ÒÔÉÏÀ´×Ôqu.cpp 
 
-//Ç°¶ËĞèÇó£º$str²»³¬¹ı4095¸ö×Ö·û£¨¼´ËãÉÏ'\0'²»ÄÜÔ½Î»£©
+char path_up[input_buffer_length] = { 0 };
 
 _dir_block get_dirblock(int inode_id)//´´½¨dirblock£¬¾¯¸æ£¬Ê¹ÓÃÇ°ĞèÒªÅĞ¶ÏÊÇ·ñÎªÄ¿Â¼£¬ÇÒĞèÒª±£Ö¤Ä¿Â¼Ãû<252 
 {
@@ -149,11 +149,13 @@ int cut_path_and_path_up(char path[], char str_name[])//echo¸±º¯Êı£¬-1ÎÄ¼şÃû¹ı³¤
 	str_name[lenname] = '\0';
 	//cout << "str_name: " << str_name << endl;
 	if (flag) {
-		path[UpDirPos] = '\0';
-		//cout << "path_up: " << path_up << endl;
+		strncpy(path_up, path, UpDirPos);
+		path_up[UpDirPos] = '\0';
+		cout << "path_up: " << path_up << endl;//mark
 	}
 	else {
-		path[0] = '\0';
+		path_up[0] = '.';
+		path_up[1] = '\0';
 	}
 	return 0;
 }
@@ -169,8 +171,8 @@ int DoEcho(char path[], char str[])//echoÄÚºË£¬-kÂ·¾¶´íÎó£¬+k¿Õ¼ä´íÎó£¬»áÔÚÂ·¾¶Î
 	//Èô²»´æÔÚ£¬²éÕÒÉÏ¼¶Ä¿Â¼ÊÇ·ñ´æÔÚ
 	if (str_inode_id < 0) {
 		char str_name[252];
-		cut_path_and_path_up(path, str_name);//½«path±äÎªÉÏ¼¶Ä¿Â¼µÄpath
-		int upstr_inode_id = GetPathInode(path);
+		cut_path_and_path_up(path, str_name);
+		int upstr_inode_id = GetPathInode(path_up);
 		//ÉÏ¼¶²»´æÔÚ·µ»Ø-2
 		if (upstr_inode_id<0) {
 			return -2;
@@ -180,7 +182,7 @@ int DoEcho(char path[], char str[])//echoÄÚºË£¬-kÂ·¾¶´íÎó£¬+k¿Õ¼ä´íÎó£¬»áÔÚÂ·¾¶Î
 			return -3;
 		}
 		//Ñ°ÕÒ¿ÉÓÃÎ»ÖÃ
-		int str_position = find_free_dir_entry(upstr_inode_id, path);
+		int str_position = find_free_dir_entry(upstr_inode_id, path_up);
 		if (str_position < 0) {
 			return 1;
 		}
