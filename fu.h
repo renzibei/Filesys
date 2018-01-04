@@ -35,6 +35,8 @@ int cut_path_and_path_up(char path[], char str_name[]);//echo副函数，-1文�
 int delete_directory(int path_inode_id);//删除某inode_id的目录，-2不存在，-1文件，0成功
 int delete_file(char path[]);//删除某inode_id的文件，-2不存在，-1文件夹，0成功
 int delete_file(int path_inode_id);//删除某路径的文件，-2不存在，-1文件夹，0成功
+
+int formart();//磁盘格式化
 #endif
 
 

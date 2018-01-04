@@ -320,16 +320,7 @@ int delete_directory(int path_inode_id)//É¾³ıÄ³inode_idµÄÄ¿Â¼£¬-2²»´æÔÚ£¬-1ÎÄ¼ş£
 	_dir_block dirblock = get_dirblock(path_inode_id);
 	//É¾³ı×ÓÎÄ¼ş¼ĞºÍ×ÓÎÄ¼ş
 	for (int i = 2; i < 16; i++) {
-		
-		char* down_name = dirblock.dirs[i].name;
-		bool NotEmpty = false;
-		for (int j = 0; j < 252; j++) {
-			if (down_name[j] != 0) {
-				NotEmpty = true;
-				break;
-			}
-		}
-		if (NotEmpty) {
+		if (dirblock.dirs[i].name[0] != 0) {
 			int down_inode_id = dirblock.dirs[i].inode_id;
 			int down_mode = inodes[down_inode_id].i_mode;
 			if (down_mode == 1) {
@@ -388,6 +379,32 @@ int rm(char path[])//É¾³ıpathÂ·¾¶µÄÎÄ¼ş£¬-2²»´æÔÚ£¬-1Ä¿Â¼£¬0³É¹¦
 	return i;
 }
 
+int formart()//´ÅÅÌ¸ñÊ½»¯
+{
+	cout << "Do you want to format the disk and erase the information?\n"
+		<< "If yes, input \"Y\". If no, input other keys\n"
+		<< ">> ";
+	string keys;
+	getline(cin, keys);
+	if (keys != "Y") {
+		return 1;
+	}
+	_dir_block dirblock = get_dirblock(0);
+	//É¾³ı×ÓÎÄ¼ş¼ĞºÍ×ÓÎÄ¼ş
+	for (int i = 2; i < 16; i++) {
+		if (dirblock.dirs[i].name[0] != 0) {
+			int down_inode_id = dirblock.dirs[i].inode_id;
+			int down_mode = inodes[down_inode_id].i_mode;
+			if (down_mode == 1) {
+				delete_file(down_inode_id);
+			}
+			else {
+				delete_directory(down_inode_id);
+			}
+		}
+	}
+	return 0;
+}
 int rmdir(char path[])//É¾³ıpathÂ·¾¶µÄÄ¿Â¼£¬-3Îª¸ùÄ¿Â¼£¬-2²»´æÔÚ£¬-1ÎÄ¼ş£¬0³É¹¦
 {
 	int path_inode_id = GetPathInode(path);

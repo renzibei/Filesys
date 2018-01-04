@@ -891,6 +891,15 @@ int WaitMessage()
             }
         }
             break;
+		case 'f':
+		{
+			if (IsCmdErr("formart", inputbuffer, 0)) {
+				CmdError(inputbuffer);
+				return 2;
+			}
+			return formart();
+		}
+			break;
         default:
             CmdError(inputbuffer);
             return 2;
