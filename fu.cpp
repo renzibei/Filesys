@@ -106,6 +106,11 @@ int find_position_dir_entry(int path_inode_id){//Î´¼ÓpathÅĞ¶Ï£¬¼´Ğè×ÔĞĞÅĞ¶Ïpath´
 
 int echo(char path[], char str[])//½«strÔÚĞ´ÈëpathÂ·¾¶µÄÎÄ¼ş£¬ĞèÇópathÒÔ'\0'½áÎ²£¬strËæÒâ
 {
+	return 0;
+}
+
+int DoEcho(char path[], char str[])//echoÄÚºË
+{
 	int tmplen = (int)strlen(path);//Â·¾¶³¤¶È
 	char str_name[252] = {0};//ÎÄ¼şÃû
 	int UpDirPos = -1;//ÉÏ¼¶Ä¿Â¼Â·¾¶ÖÕÖ¹Î»ÖÃ£¬¼´'/'Î»ÖÃ
@@ -212,7 +217,7 @@ int cat(char path[]) {//¶ÁÈ¡pathÂ·¾¶µÄÎÄ¼ş£¬-2²»´æÔÚ£¬-1Ä¿Â¼£¬0³É¹¦
 	return i;
 }
 
-int DoCat(char path[])//¶ÁÈ¡pathÂ·¾¶µÄÎÄ¼ş£¬-2²»´æÔÚ£¬-1Ä¿Â¼£¬0³É¹¦
+int DoCat(char path[])//catÄÚºË
 {
 	int str_inode_id = GetPathInode(path); 
 	if (str_inode_id<0){
@@ -316,7 +321,7 @@ int delete_directory(int path_inode_id)//É¾³ıÄ³inode_idµÄÄ¿Â¼£¬-2²»´æÔÚ£¬-1ÎÄ¼ş£
 	int path_block_id = inodes[path_inode_id].i_blocks[0];
 	int path_position = find_position_dir_entry(path_inode_id);
 	if (path_position < 0) {
-		printf("Unexpected mistake happened");
+		printf("Unexpected mistake happened\n");
 		return -1;
 	}
 	if (path_position >= 0) {
@@ -356,10 +361,10 @@ int rmdir(char path[])//É¾³ıpathÂ·¾¶µÄÄ¿Â¼£¬-2²»´æÔÚ£¬-1ÎÄ¼ş£¬0³É¹¦
 	int path_inode_id = GetPathInode(path);
 	int i = delete_directory(path_inode_id);
 	if (i == -2) {
-		printf("%s No such file or directory\n", path);
+		PathError(path);
 	}
 	if (i == -1) {
-		printf("%s is not a directory\n", path);
+		DirError(path);
 	}
 	return i;
 }

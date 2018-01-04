@@ -19,13 +19,17 @@ int find_free_dir_entry(int inode_id, char path[]);
 int find_position_dir_entry(int path_inode_id);
 
 int cat(char path[]);//读取path路径的文件，-2不存在，-1目录，0成功
-int DoCat(char path[]);
+int DoCat(char path[]);//cat内核
+
 int rm(char path[]);//删除path路径的文件，-2不存在，-1目录，0成功
 int rmdir(char path[]);//删除path路径的目录，-2不存在，-1文件，0成功
-int echo(char path[], char str[]);
+
+int echo(char path[], char str[]);//将str在写入path路径的文件，需求path以'\0'结尾，str随意
+int DoEcho(char path[], char str[]);//echo内核
+
 int delete_directory(int path_inode_id);//删除某inode_id的目录，-2不存在，-1文件，0成功
 int delete_file(char path[]);//删除某inode_id的文件，-2不存在，-1文件夹，0成功
-int delete_file(int path_inode_id);//删除某inode_id的文件，-2不存在，-1文件夹，0成功
+int delete_file(int path_inode_id);//删除某路径的文件，-2不存在，-1文件夹，0成功
 #endif
 
 
