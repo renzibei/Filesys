@@ -654,21 +654,24 @@ int ListDirs(char path[])
         tar_inodeid = wkpath->dir_inode;
     else tar_inodeid = GetPathInode(path);
     int dir_entry_id = -1, son_cnt = 0;
-    for(int i = 2; i < 16; ++i) {
-        
-        fseek(vfs, DataBlkPos(inodes[tar_inodeid].i_blocks[0]), SEEK_SET);
-        fseek(vfs, DirsPos(i), SEEK_CUR);
-        memset(dir_name, 0, sizeof(dir_name));
-        fread(dir_name, sizeof(char), 252, vfs);
-        fread(&dir_entry_id, sizeof(int), 1, vfs);
-        if(dir_entry_id != 0) {
-            cout.width(10);
-            cout << dir_name << "   ";
-            son_cnt++;
-            if(son_cnt > 0 && (son_cnt) % 5 == 0)
-                cout << endl;
-        }
+    if(inodes[tar_inodeid].i_mode == 1) {
+        GetSelfName(tar_inodeid, dir_name);
+        cout << dir_name;
     }
+    else for(int i = 2; i < 16; ++i) {
+            fseek(vfs, DataBlkPos(inodes[tar_inodeid].i_blocks[0]), SEEK_SET);
+            fseek(vfs, DirsPos(i), SEEK_CUR);
+            memset(dir_name, 0, sizeof(dir_name));
+            fread(dir_name, sizeof(char), 252, vfs);
+            fread(&dir_entry_id, sizeof(int), 1, vfs);
+            if(dir_entry_id != 0) {
+                cout.width(10);
+                cout << dir_name << "   ";
+                son_cnt++;
+                if(son_cnt > 0 && (son_cnt) % 5 == 0)
+                    cout << endl;
+            }
+        }
     cout << endl;
     fclose(vfs);
     return 0;
