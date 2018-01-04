@@ -109,7 +109,7 @@ int FindSonPath(char sonpath[],int inode_id, int &relasondir)
     fclose(vfs);
     if(!existedfreeentry)
         relasondir = -1;
-    return -1;
+    return relasondir;
 }
 
 void ExistedError(char path[])
@@ -357,7 +357,8 @@ int FindPath(char path[], int inode_id,int type_find)
     if(!AnotherDir) {
         if(path_len == 0)
             son_inode_id = inode_id;
-        son_inode_id = FindSonPath(path, inode_id, relasondir);
+        else
+            son_inode_id = FindSonPath(path, inode_id, relasondir);
 		if (type_find == 1 && son_inode_id != -1 )
             UpdatePath(path, inode_id, son_inode_id);
         return son_inode_id;
@@ -901,5 +902,5 @@ int WaitMessage()
 
 void debug()
 {
-    cout << "" << "ha" << endl;
+    cout << GetPathInode("");
 }
