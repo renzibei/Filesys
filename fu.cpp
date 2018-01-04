@@ -161,7 +161,12 @@ int cut_path_and_path_up(char path[], char str_name[])//echo副函数，-1文件名过长
 		path_up[0] = '.';
 		path_up[1] = '\0';
 	}
-	return 0;
+
+	strncpy(str_name, path + UpDirPos + 1, lenname);
+	str_name[lenname] = '\0';
+    //cout << "str_name: " << str_name << endl;
+    return 0;
+
 }
 
 int DoEcho(char path[], char str[])//echo内核，-k路径错误，+k空间错误，0成功

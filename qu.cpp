@@ -731,6 +731,11 @@ bool IsCmdErr(const char* cmd, char path[], int judgemode = 1)
     return 1;
 }
 
+void EmptyErr(char path[])
+{
+    cout << path << " The name cannot be empty!" << endl;
+}
+
 int WaitMessage()
 {
     cout << ">> " ;
@@ -801,7 +806,7 @@ int WaitMessage()
                     return 2;
                 }
                 else if(!(inputlen > 6 && strncmp(inputbuffer, "mkdir ", 6) == 0)) {
-                    PathError(inputbuffer + 6);
+                    EmptyErr(inputbuffer + 6);
                     return 1;
                 }
                 return MakeDir(inputbuffer + 6);
