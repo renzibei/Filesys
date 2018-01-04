@@ -131,7 +131,8 @@ char fat_path[input_buffer_length] = {0};
 int MakeFolder(char path[])
 {
     int path_len = (int) strlen(path), divpos = -1, fat_inode = 0;
-    dir_name[253] = {0};
+    char dir_name[253] = {0};
+    memset(fat_path, 0, sizeof(fat_path));
     for(int i = path_len-1; i > -1; --i)
         if(path[i] == '/') {
             divpos = i;
