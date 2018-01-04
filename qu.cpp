@@ -616,7 +616,7 @@ int ReName(char path[], char AimedName[])
         GetSelfName(srcInodeId, SonName);
         int fat_inodeid = inodes[srcInodeId].fat_id, rela_id = -1;
         FindSonPath(SonName, fat_inodeid, rela_id);
-        WriteDir("", <#int relative_dir_entry_id#>, <#int dir_block_id#>, <#int son_dir_id#>)
+       // WriteDir("", <#int relative_dir_entry_id#>, <#int dir_block_id#>, <#int son_dir_id#>)
         WriteDir(AimedName, rela_id, inodes[fat_inodeid].i_blocks[0], srcInodeId);
     }
     //char current_path[input_buffer_length] = {0};
