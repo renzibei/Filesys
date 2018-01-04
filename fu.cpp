@@ -25,7 +25,7 @@ int GetPathInode(char path[], int type_judge = 0); */
 
 //Ç°¶ËĞèÇó£º$str²»³¬¹ı4095¸ö×Ö·û£¨¼´ËãÉÏ'\0'²»ÄÜÔ½Î»£©
 
-_dir_block get_dirblock(int inode_id)//´´½¨dirblock£¬¾¯¸æ£¬Ã¿´ÎÊ¹ÓÃdirblockÖ®Ç°¶¼ĞèÒªÅĞ¶ÏÊÇ·ñÎªÎÄ¼ş¼Ğ 
+_dir_block get_dirblock(int inode_id)//´´½¨dirblock£¬¾¯¸æ£¬Ê¹ÓÃÇ°ĞèÒªÅĞ¶ÏÊÇ·ñÎªÄ¿Â¼£¬ÇÒĞèÒª±£Ö¤Ä¿Â¼Ãû<252 
 {
 	FILE *vfs = fopen(filename, "rb+");
 	_dir_block block;
@@ -39,7 +39,7 @@ _dir_block get_dirblock(int inode_id)//´´½¨dirblock£¬¾¯¸æ£¬Ã¿´ÎÊ¹ÓÃdirblockÖ®Ç°¶
 	fclose(vfs);
 	return block;
 }
-_file_block get_fileblock(int inode_id)//´´½¨fileblock£¬¾¯¸æ£¬Ã¿´ÎÊ¹ÓÃfileblockÖ®Ç°¶¼ĞèÒªÅĞ¶ÏÊÇ·ñÎªÎÄ¼ş 
+_file_block get_fileblock(int inode_id)//´´½¨fileblock£¬¾¯¸æ£¬Ê¹ÓÃfileblockÇ°ĞèÒªÅĞ¶ÏÊÇ·ñÎªÎÄ¼ş£¬ÇÒĞèÒª±£ÕÏÎÄ¼şÃû´óĞ¡<252 
 {
 	_file_block fileblock;
 	FILE *vfs = fopen(filename, "rb+");
@@ -50,45 +50,58 @@ _file_block get_fileblock(int inode_id)//´´½¨fileblock£¬¾¯¸æ£¬Ã¿´ÎÊ¹ÓÃfileblockÖ
 	fclose(vfs);
 	return fileblock;
 }
+
 void write_fileblock_into_file(char str[],int block_id)//ÔÚblock_idÉÏÊéĞ´str£¬¾¯¸æ£¬Ã¿´ÎÊ¹ÓÃÇ°Ğè±£Ö¤ÊÇÎÄ¼ş
 {
 	FILE *vfs = fopen(filename, "rb+");
 	long Position = DataBlkPos(block_id);
 	fseek(vfs, Position, SEEK_SET);
-    fwrite(str ,sizeof(char), strlen(str), vfs);
+	int lenstr = strlen(str);
+	if (lenstr > 4096) {
+		lenstr = 4096;
+	}
+    fwrite(str ,sizeof(char), lenstr, vfs);
     char _zero = 0;
-	fwrite(&_zero ,sizeof(char), datablk_size-strlen(str), vfs);
+	fwrite(&_zero ,sizeof(char), datablk_size - lenstr, vfs);
 	fclose(vfs);
 	return;
 }
+
+void InodeFullError() {
+	printf("All inodes are used\n");
+}
+
 int find_free_indbmp(){
 	int i = 0;
 	for (; (i < indbmp_size) && (sbks.inode_bitmap[i] != 0); i++);
 	if (i == 4096){
-		printf("All inodes are used\n");
 		return -1;
 	}
 	return i;
 }
+
+
+void BlockFullError() {
+	printf("All blocks are used\n");
+}
+
 int find_free_blkbmp(){
 	int i = 0;
 	for (; (i < blkbmp_size) && (sbks.block_bitmap[i] != 0); i++);
 	if (i == 4096){
-		printf("All blocks are used\n");
 		return -1;
 	}
 	return i;
 }
 int find_free_dir_entry(int inode_id, char path[]){
 	if (inodes[inode_id].i_mode == 1){
-		printf("%s is not a directory\n",path);
+		return -2;
 	}
 	int block_id = inodes[inode_id].i_blocks[0]; 
 	_dir_block block1 = get_dirblock(inode_id);//ÕÒµ½block
 	int i = 0;
 	for (; (i<16)&&(block1.dirs[i].name[0] != '\0'); i++);
 	if (i==16){
-		printf("%s is full\n",path);
 		return -1;
 	}
 	return i;
@@ -104,60 +117,79 @@ int find_position_dir_entry(int path_inode_id){//Î´¼ÓpathÅĞ¶Ï£¬¼´Ğè×ÔĞĞÅĞ¶Ïpath´
 	return i;
 }
 
-int echo(char path[], char str[])//½«strÔÚĞ´ÈëpathÂ·¾¶µÄÎÄ¼ş 
+int echo(char path[], char str[])//½«strÔÚĞ´ÈëpathÂ·¾¶µÄÎÄ¼ş£¬ĞèÇópathÒÔ'\0'½áÎ²£¬strËæÒâ
 {
-	char path_up[252] = {0};//ÉÏÒ»¼¶Ä¿Â¼
+	int tmplen = strlen(path);//Â·¾¶³¤¶È
 	char str_name[252] = {0};//ÎÄ¼şÃû
-	int UpDirPos = 0;
-	bool UpDir = 0;
-	for (int i = 10; i >= 0; i--){
+	int UpDirPos = -1;//ÉÏ¼¶Ä¿Â¼Â·¾¶ÖÕÖ¹Î»ÖÃ£¬¼´'/'Î»ÖÃ
+	bool flag = 0;//ÎÄ¼şÎª±ê×¼¸ñÊ½"a/b/c"»ò·Ç±ê×¼¸ñÊ½"a"(Ïàµ±ÓÚ"./a")Ç°ÕßÎª1£¬ºóÕß0
+	for (int i = tmplen; i >= 0; i--){
 		if(path[i] == '/') {
-			UpDir = 1;
+			flag = 1;
 			UpDirPos = i;
 			break;
 		}
 	}
-	if (UpDir){//»ñµÃÎÄ¼şÃû¡¢ÉÏ¼¶ÎÄ¼ş¼ĞÂ·¾¶
-		for (int i = UpDirPos - 1; i >= 0; i--){
-			path_up[i] = path[i];
-			str_name[251-i] = '\0';
-		}
-		for (int i = UpDirPos; i < 252; i++){
-			path_up[i] = '\0';
-			str_name[i-UpDirPos] = path[i];
-		}
-	}
 
-	else {//ÒâÍâÇé¿ö
-		printf("%s No such file or directory\n", path_up);
-		return -1;
+	//»ñµÃÎÄ¼şÃû¡¢ÉÏ¼¶ÎÄ¼ş¼ĞÂ·¾¶
+	int lenstr = tmplen;//str³¤¶È
+	if (flag) {
+		lenstr = tmplen - UpDirPos - 1;
 	}
+	if (lenstr > 251) {//ÎÄ¼şÃû¹ı³¤
+		NameLongError();
+		return -2;
+	}
+	char * path_up = new char[tmplen + 2];//ÉÏÒ»¼¶Ä¿Â¼
+	if (flag) {
+		strncpy(path_up, path, UpDirPos);
+		path_up[UpDirPos] = '\0';
+		//cout << "path_up: " << path_up << endl;
+	}
+	else {
+		path_up[0] = '.';
+		path_up[1] = '\0';
+	}
+	strncpy(str_name, path + UpDirPos + 1, lenstr);
+	str_name[lenstr] = '\0';
+	//cout << "str_name: " << str_name << endl;
+
+
 	int upstr_inode_id = GetPathInode(path_up);
 	if (upstr_inode_id<0){
-		printf("%s No such file or directory\n", path_up);
+		PathError(path_up);
+		delete[] path_up;
 		return -1;
 	}
 	if (inodes[upstr_inode_id].i_mode == 1){
-		printf("%s is not directory\n",path_up);
+		DirError(path_up);
+		delete[] path_up;
 		return -1;
 	}
 
-	int str_inode_id = FindPath(path, upstr_inode_id);//Èô²»´æÔÚ£¬Ôò´´½¨»ù±¾ĞÅÏ¢
-	if (str_inode_id<0){
+	int str_inode_id = FindPath(path, upstr_inode_id);//inode_id£¬²»´æÔÚÎª-1
+	if (str_inode_id<0){//²»´æÔÚÔò´´½¨»ù±¾ĞÅÏ¢
+		//Ñ°ÕÒ¿ÉÓÃÎ»ÖÃ
 		int str_position = find_free_dir_entry(upstr_inode_id, path_up);
 		if (str_position < 0){
+			FullError();
+			delete[] path_up;
 			return -1;
 		} 
 		str_inode_id = find_free_indbmp();
 		if (str_inode_id<0){
+			InodeFullError();
+			delete[] path_up;
 			return -1;
 		}
 		int str_block_id = find_free_blkbmp();
 		if (str_block_id<0){
+			BlockFullError();
+			delete[] path_up;
 			return -1;
 		}//ÒÔÉÏ¶ÔÓ¦´ÅÅÌ¿Õ¼äÒÑÂúµÄÇé¿ö
 
-		char path_name[252] = {0};
+		//³õÊ¼»¯
 		WriteDir(str_name, str_position, upstr_inode_id, str_inode_id);
 		inodes[str_inode_id] = _inode(str_inode_id, 1, sizeof(str), upstr_inode_id, str_block_id);
 		//²»±ØÇå³ıinode/block£¬ÒòÎªËüÃÇ±¾À´¾ÍÊÇ¿ÕµÄ 
@@ -170,7 +202,7 @@ int echo(char path[], char str[])//½«strÔÚĞ´ÈëpathÂ·¾¶µÄÎÄ¼ş
 
 	char full_str[4096];
 	int i = 0;
-	for (;str[i] != '\0';i++){
+	for (;(str[i] != '\0') && i < 4096;i++){
 		full_str[i] = str[i];
 	}
 	for (;i<4096;i++){
@@ -178,7 +210,8 @@ int echo(char path[], char str[])//½«strÔÚĞ´ÈëpathÂ·¾¶µÄÎÄ¼ş
 	}//À©Õ¹strµ½±ê×¼³¤¶È
 
 	write_fileblock_into_file(full_str,inodes[str_inode_id].i_blocks[0]);//Ğ´Èëstr
-	return 0;
+	delete[] path_up;
+	return 0;//mark
 }
  
 int cat(char path[])//¶ÁÈ¡pathÂ·¾¶µÄÎÄ¼ş
