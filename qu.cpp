@@ -109,7 +109,7 @@ int FindSonPath(char sonpath[],int inode_id, int &relasondir)
     fclose(vfs);
     if(!existedfreeentry)
         relasondir = -1;
-    return relasondir;
+    return -1;
 }
 
 void ExistedError(char path[])
