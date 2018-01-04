@@ -48,6 +48,7 @@ void DirError(char path[]);
 //文件不存在报错
 void NoExistedErr(char path[]);
 
+int GetSelfName(int inode_id, char selfname[]);
 int UpdateInode(int x);
 int UpdateIndBmp(int inode_bmp_id);
 int UpdateBlkBmp(int block_bmp_id);
