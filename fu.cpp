@@ -383,15 +383,28 @@ int rm(char path[])//删除path路径的文件，-2不存在，-1目录，0成功
 	return i;
 }
 
-int formart()//磁盘格式化
+int format()//磁盘格式化
 {
 	cout << "Do you want to format the disk and erase the information?\n"
-		<< "If yes, input \"Y\". If no, input other keys\n"
+		<< "If yes, input \"Y\". If no, input other things\n"
 		<< ">> ";
-	string keys;
-	getline(cin, keys);
-	if (keys != "Y") {
+	string key1;
+	getline(cin, key1);
+	if (key1 != "Y") {
+		return -1;
+	}
+	cout << "Do you want to format quicker but maybe not completely, or completely be slower?\n"
+		<< "If quicker, input \"Q\". If completely, input \"C\"\n"
+		<< "If you don't want to format, input other things\n"
+		<< ">> ";
+	string key2;
+	getline(cin, key2);
+	if (key1 == "C") {
+		FormatDisk();
 		return 1;
+	}
+	if (key1 != "Q") {
+		return -1;
 	}
 	_dir_block dirblock = get_dirblock(0);
 	//删除子文件夹和子文件

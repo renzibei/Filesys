@@ -19,6 +19,7 @@ extern workdir_pathnode *wkpath;
 #endif
 extern char inputbuffer[input_buffer_length];
 
+void FormatDisk();
 int InitDisk();
 long DataBlkPos(int x);
 long inodesPos(int x);
