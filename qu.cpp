@@ -655,8 +655,7 @@ int ListDirs(char path[])
     else tar_inodeid = GetPathInode(path);
     int dir_entry_id = -1, son_cnt = 0;
     for(int i = 2; i < 16; ++i) {
-        if(son_cnt > 0 && (son_cnt + 1) % 5 == 0)
-            cout << endl;
+        
         fseek(vfs, DataBlkPos(inodes[tar_inodeid].i_blocks[0]), SEEK_SET);
         fseek(vfs, DirsPos(i), SEEK_CUR);
         memset(dir_name, 0, sizeof(dir_name));
@@ -666,6 +665,8 @@ int ListDirs(char path[])
             cout.width(10);
             cout << dir_name << "   ";
             son_cnt++;
+            if(son_cnt > 0 && (son_cnt) % 5 == 0)
+                cout << endl;
         }
     }
     cout << endl;
