@@ -661,6 +661,10 @@ int ListDirs(char path[])
         tar_inodeid = wkpath->dir_inode;
     else tar_inodeid = GetPathInode(path);
     int dir_entry_id = -1, son_cnt = 0;
+    if(tar_inodeid < 0) {
+        PathError(path);
+        return tar_inodeid;
+    }
     if(inodes[tar_inodeid].i_mode == 1) {
         GetSelfName(tar_inodeid, dir_name);
         cout << dir_name;
