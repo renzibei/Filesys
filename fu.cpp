@@ -403,6 +403,7 @@ int formart()//磁盘格式化
 			}
 		}
 	}
+	ChangeDir("/");
 	return 0;
 }
 int rmdir(char path[])//删除path路径的目录，-3为根目录，-2不存在，-1文件，0成功
