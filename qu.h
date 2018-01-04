@@ -30,6 +30,7 @@ bool IsExit(int);
 int GetWorkDir();
 int GetPathInode(char path[], int type_judge = 0);
 int FindPath(char path[], int inode_id,int type_find = 0);
+int ListDirs(char path[]);
 //路径错误报错
 void PathError(char path[]);
 //文件已存在报错

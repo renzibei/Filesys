@@ -607,17 +607,17 @@ int ChangeDir(char *path)
 int ReName(char path[], char AimedName[])
 {
     int srcInodeId = GetPathInode(path);
-    char SonName[252] = {0};
+    char SonName[252] = {0}, zero_str[252] = {0};
     int TempInode = GetPathInode(AimedName);
     if(srcInodeId < 0)
         return srcInodeId;
     else {
         if(TempInode != srcInodeId && TempInode > 0)
-            return -10;
+            return 10;
         GetSelfName(srcInodeId, SonName);
         int fat_inodeid = inodes[srcInodeId].fat_id, rela_id = -1;
         FindSonPath(SonName, fat_inodeid, rela_id);
-       // WriteDir("", <#int relative_dir_entry_id#>, <#int dir_block_id#>, <#int son_dir_id#>)
+        WriteDir(zero_str, rela_id, inodes[fat_inodeid].i_blocks[0], srcInodeId);
         WriteDir(AimedName, rela_id, inodes[fat_inodeid].i_blocks[0], srcInodeId);
     }
     //char current_path[input_buffer_length] = {0};
@@ -638,6 +638,10 @@ int mv(char path[], char AimedName[])
     if(tempstatus < 0) {
         NoExistedErr(path);
         return -11;
+    }
+    else if(tempstatus == 10) {
+        ExistedError(AimedName);
+        return 10;
     }
     return 0;
     
@@ -665,11 +669,12 @@ int ListDirs(char path[])
             fread(dir_name, sizeof(char), 252, vfs);
             fread(&dir_entry_id, sizeof(int), 1, vfs);
             if(dir_entry_id != 0) {
+                if(son_cnt > 1 && (son_cnt) % 5 == 0)
+                    cout << endl;
                 cout.width(10);
                 cout << dir_name << "   ";
                 son_cnt++;
-                if(son_cnt > 0 && (son_cnt) % 5 == 0)
-                    cout << endl;
+                
             }
         }
     cout << endl;
@@ -831,7 +836,7 @@ int WaitMessage()
                     for(int i = 6; i < inputlen; ++i)
                         if(inputbuffer[i] == ' '){
                             memset(inputcontent, 0 ,sizeof(inputcontent));
-							cout << inputbuffer + 5 << endl;
+							//cout << inputbuffer + 5 << endl;
                             echopos = InitEcho(inputbuffer + 5, inputcontent);
                             int input_cnt_len = (int)strlen(inputcontent);
                             if(echopos == -1) {
