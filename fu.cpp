@@ -443,7 +443,18 @@ void ModeError() {
 	cout << "refresh: mode not found, 0 or 1 only" << endl;
 }
 
+void VfsError() {
+	cout << filename  << " is not exist\n";
+}
 int refresh(int i) {
+	FILE *vfs = fopen(filename, "rb");
+	if (vfs == NULL) {
+		VfsError();
+		return 0;
+	}
+	else {
+		fclose(vfs);
+	}
 	if (i == 0) {
 		for (int j = 0; j < 4096; j++) {
 			UpdateBlkBmp(j);
