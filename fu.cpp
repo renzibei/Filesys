@@ -220,7 +220,6 @@ int DoEcho(char path[], char str[],char path_up[])//echo内核，目录返回-1，上级不
 	inodes[str_inode_id].i_file_size = filesize;
 	UpdateInode(str_inode_id);//更改inode中的fizesize
 	write_fileblock_into_file(full_str,inodes[str_inode_id].i_blocks[0]);//写入str
-	delete[] path_up;
 	return 0;
 }
  
