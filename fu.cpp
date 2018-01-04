@@ -1,25 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "fu.h"
-/*
-#include "qu.cpp"
-#include "Filesys.h"
-#include "Filesys.cpp"
-*/
-/*const char filename[12] = "Filesys.vfs";
-const int inode_size = 32, datablk_size = 4096, dir_size = 256;
-const int indbmp_size = 4096, blkbmp_size = 4096, inodes_size = inode_size * 4096;
-long DataBlkPos(int x); //返回第x个data_block在磁盘文件中的位置
-long InodesPos(int x); //返回第x个inode在磁盘文件中的位置
-long DirsPos(int x); //返回第x子文件目录的相对位置
-int UpdateInode(int x);//更新第x个inode信息 
-int UpdateBlkBmp(int x);//更新第x个超级块block信息 
-int FindSonPath(char sonpath[],int inode_id); 
-int FindPath(char path[], int inode_id);//返回path[]的inode_id路径或-1 
-void WriteDir(const char *dir_name, int dir_id, int inode_id);//在inode_id文件夹中的第dir_id个位置建立文件夹联系dir_name
-int UpdateIndBmp(int x);
-int UpdateBlkBmp(int x);
-int UpdateInode(int x);
-int GetPathInode(char path[], int type_judge = 0); */
+
 //注意，WriteDir函数中写入dir_name没有把后面补全'\0' 
 //以上来自qu.cpp 
 
@@ -61,10 +42,15 @@ void write_fileblock_into_file(char str[],int block_id)//在block_id上书写str，警
 		lenstr = 4096;
 	}
     fwrite(str ,sizeof(char), lenstr, vfs);
-    char _zero = 0;
-	fwrite(&_zero ,sizeof(char), datablk_size - lenstr, vfs);
+	char _zero[1] = { '\0' };
+	for(int i=0;i<datablk_size - lenstr;i++)
+		fwrite(_zero ,sizeof(char), 1, vfs);
 	fclose(vfs);
 	return;
+}
+
+void FileError(char path[]) {
+	cout << path << " " << "is not a directory." << endl;
 }
 
 void InodeFullError() {
@@ -205,10 +191,10 @@ int echo(char path[], char str[])//将str在写入path路径的文件，需求path以'\0'结尾
 	for (;(str[i] != '\0') && i < 4096;i++){
 		full_str[i] = str[i];
 	}
+	//cout << i << " i\n";
 	for (;i<4096;i++){
 		full_str[i] = '\0';
 	}//扩展str到标准长度
-
 	write_fileblock_into_file(full_str,inodes[str_inode_id].i_blocks[0]);//写入str
 	delete[] path_up;
 	return 0;//mark
@@ -238,7 +224,7 @@ int delete_file(int path_inode_id)//删除某inode_id的文件，已加判断path是否为文件
 	UpdateIndBmp(path_inode_id);//重置path对应的inode_bitmap
 
 	int path_block_id = inodes[path_inode_id].i_blocks[0];
-	sbks.inode_bitmap[path_block_id] = 0;
+	sbks.block_bitmap[path_block_id] = 0;
 	UpdateBlkBmp(path_inode_id);//重置path对应的block_bitmap
 
 	char str[252] = { 0 };
@@ -330,7 +316,7 @@ int rm(char path[])//删除path路径的文件
 {
 	int path_inode_id = GetPathInode(path);
 	if (path_inode_id < 0) {
-		printf("%s No such file or directory\n", path);
+		PathError(path);
 		return -1;
 	}
 	int i = delete_file(path_inode_id);//这里自然path存在，uppath存在且是文件夹

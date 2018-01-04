@@ -831,7 +831,7 @@ int WaitMessage()
                     for(int i = 6; i < inputlen; ++i)
                         if(inputbuffer[i] == ' '){
                             memset(inputcontent, 0 ,sizeof(inputcontent));
-							cout << inputbuffer + 5 << endl;
+							//cout << inputbuffer + 5 << endl;
                             echopos = InitEcho(inputbuffer + 5, inputcontent);
                             int input_cnt_len = (int)strlen(inputcontent);
                             if(echopos == -1) {
