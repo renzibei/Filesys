@@ -160,7 +160,7 @@ int cut_path_and_path_up(char path[], char str_name[])//echo副函数，-1文件名过长
 	return 0;
 }
 
-int DoEcho(char path[], char str[])//echo内核，-k路径错误，+k空间错误，会把文件不存在时path改成
+int DoEcho(char path[], char str[])//echo内核，-k路径错误，+k空间错误，会在路径无误时path改成上级目录path
 {
 	int str_inode_id = GetPathInode(path);
 
