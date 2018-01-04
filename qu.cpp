@@ -889,6 +889,18 @@ int WaitMessage()
                 }
                 else return rmdir(inputbuffer + 6);
             }
+			else if (!IsCmdErr("refresh", inputbuffer)) {
+				if (inputlen == 9 && strncmp(inputbuffer, "refresh 1", 9) == 0) {
+					return refresh(1);
+				}
+				else if (inputlen == 9 && strncmp(inputbuffer, "refresh 0", 9) == 0) {
+					return refresh(0);
+				}
+				else {
+					ModeError();
+					return 1;
+				}
+			}
             else {
                 CmdError(inputbuffer);
                 return 2;

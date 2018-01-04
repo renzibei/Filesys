@@ -421,3 +421,24 @@ int rmdir(char path[])//删除path路径的目录，-3为根目录，-2不存在，-1文件，0成功
 	}
 	return i;
 }
+
+void ModeError() {
+	cout << "refresh: mode not found, 0 or 1 only" << endl;
+}
+
+int refresh(int i) {
+	if (i == 0) {
+		for (int j = 0; j < 4096; j++) {
+			UpdateBlkBmp(j);
+			UpdateIndBmp(j);
+			UpdateInode(j);
+		}
+	}
+	else if (i == 1) {
+		InitDisk();
+	}
+	else {
+		return 1;
+	}
+	return 0;
+}

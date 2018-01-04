@@ -37,6 +37,9 @@ int delete_file(char path[]);//删除某inode_id的文件，-2不存在，-1文�
 int delete_file(int path_inode_id);//删除某路径的文件，-2不存在，-1文件夹，0成功
 
 int formart();//磁盘格式化
+
+void ModeError();//refresh格式错误
+int refresh(int i);//刷新磁盘/程序 1表示刷新磁盘 0表示刷新磁盘
 #endif
 
 
