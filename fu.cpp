@@ -80,6 +80,7 @@ int find_free_blkbmp(){
 	}
 	return i;
 }
+
 int find_free_dir_entry(int inode_id, char path[]) {
 	if (inodes[inode_id].i_mode == 1){
 		return -2;
@@ -154,7 +155,7 @@ int cut_path_and_path_up(char path[], char str_name[])//echo¸±º¯Êı£¬-1ÎÄ¼şÃû¹ı³¤
 	if (flag) {
 		strncpy(path_up, path, UpDirPos);
 		path_up[UpDirPos] = '\0';
-		cout << "path_up: " << path_up << endl;//mark
+		//cout << "path_up: " << path_up << endl;//mark
 	}
 	else {
 		path_up[0] = '.';
@@ -308,7 +309,9 @@ int delete_directory(int path_inode_id)//É¾³ıÄ³inode_idµÄÄ¿Â¼£¬-2²»´æÔÚ£¬-1ÎÄ¼ş£
 	if (inodes[path_inode_id].i_mode == 1) {
 		return -1;
 	}
-
+	if (inodes[path_inode_id].i_id == 0) {
+		return -3;
+	}
 	_dir_block dirblock = get_dirblock(path_inode_id);
 	//É¾³ı×ÓÎÄ¼ş¼ĞºÍ×ÓÎÄ¼ş
 	for (int i = 2; i < 16; i++) {
@@ -380,10 +383,13 @@ int rm(char path[])//É¾³ıpathÂ·¾¶µÄÎÄ¼ş£¬-2²»´æÔÚ£¬-1Ä¿Â¼£¬0³É¹¦
 	return i;
 }
 
-int rmdir(char path[])//É¾³ıpathÂ·¾¶µÄÄ¿Â¼£¬-2²»´æÔÚ£¬-1ÎÄ¼ş£¬0³É¹¦
+int rmdir(char path[])//É¾³ıpathÂ·¾¶µÄÄ¿Â¼£¬-3Îª¸ùÄ¿Â¼£¬-2²»´æÔÚ£¬-1ÎÄ¼ş£¬0³É¹¦
 {
 	int path_inode_id = GetPathInode(path);
 	int i = delete_directory(path_inode_id);
+	if (i == -3) {
+		cout << "rmdir: it is dangerous to operate recursively on \"" << path << "\"\n";
+	}
 	if (i == -2) {
 		PathError(path);
 	}
