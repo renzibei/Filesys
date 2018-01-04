@@ -50,7 +50,7 @@ void write_fileblock_into_file(char str[],int block_id)//ÔÚblock_idÉÏÊéĞ´str£¬¾¯
 }
 
 void FileError(char path[]) {
-	cout << path << " " << "is not a directory." << endl;
+	cout << path << " " << "is not a file." << endl;
 }
 
 void InodeFullError() {
