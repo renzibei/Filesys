@@ -14,7 +14,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
-
+#include <string>
 
 
 extern _inode inodes[4096];
