@@ -113,7 +113,13 @@ int echo(char path[], char str[])//需求path以'\0'结尾，str随意
 		FileError(path);
 	}
 	else if (i == -2) {
+		NameLongError();
+	}
+	else if (i == -3) {
 		PathError(path_up);
+	}
+	else if (i == -4) {
+		DirError(path_up);
 	}
 	else if (i == 1) {
 		FullError();
@@ -123,9 +129,6 @@ int echo(char path[], char str[])//需求path以'\0'结尾，str随意
 	}
 	else if (i == 3) {
 		BlockFullError();
-	}
-	else if (i == -4) {
-		NameLongError();
 	}
 	return i;
 }
@@ -180,17 +183,18 @@ int DoEcho(char path[], char str[])//echo内核，-k路径错误，+k空间错误，0成功
 	//若不存在，查找上级目录是否存在
 	if (str_inode_id < 0) {
 		char str_name[252];
+		//若过长，返回-2
 		if (cut_path_and_path_up(path, str_name) == -1) {
-			return -4;
-		}
-		int upstr_inode_id = GetPathInode(path_up);
-		//上级不存在返回-2
-		if (upstr_inode_id<0) {
 			return -2;
 		}
-		//上级为文件返回-3
-		if (inodes[upstr_inode_id].i_mode == 1) {
+		int upstr_inode_id = GetPathInode(path_up);
+		//上级不存在返回-3
+		if (upstr_inode_id<0) {
 			return -3;
+		}
+		//上级为文件返回-4
+		if (inodes[upstr_inode_id].i_mode == 1) {
+			return -4;
 		}
 		//寻找可用位置
 		int str_position = find_free_dir_entry(upstr_inode_id, path_up);
