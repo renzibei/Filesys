@@ -158,6 +158,7 @@ int MakeFolder(char path[])
        // cout << "The Directory is full!" << endl;
         return -3;
     }
+    //记得加上满磁盘判断
     int new_dir_inode = find_free_indbmp();
     sbks.inode_bitmap[new_dir_inode] = 1;
     UpdateIndBmp(new_dir_inode);
@@ -615,6 +616,7 @@ int ReName(char path[], char AimedName[])
         GetSelfName(srcInodeId, SonName);
         int fat_inodeid = inodes[srcInodeId].fat_id, rela_id = -1;
         FindSonPath(SonName, fat_inodeid, rela_id);
+        WriteDir("", <#int relative_dir_entry_id#>, <#int dir_block_id#>, <#int son_dir_id#>)
         WriteDir(AimedName, rela_id, inodes[fat_inodeid].i_blocks[0], srcInodeId);
     }
     //char current_path[input_buffer_length] = {0};
@@ -825,7 +827,6 @@ int WaitMessage()
                     for(int i = 6; i < inputlen; ++i)
                         if(inputbuffer[i] == ' '){
                             memset(inputcontent, 0 ,sizeof(inputcontent));
-                            
 							cout << inputbuffer + 5 << endl;
                             echopos = InitEcho(inputbuffer + 5, inputcontent);
                             int input_cnt_len = (int)strlen(inputcontent);
