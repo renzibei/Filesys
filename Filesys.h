@@ -16,7 +16,6 @@
 #include <cstring>
 #include <string>
 
-
 extern _inode inodes[4096];
 extern _super_block sbks;
 
