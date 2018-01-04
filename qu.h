@@ -25,6 +25,8 @@ long inodesPos(int x);
 long DirsPos(int x); //返回第x子文件目录的相对位置
 //WriteDir 第二个参数是子文件夹相对于父文件夹位置， 第三个参数是父文件夹的block_id，第四个参数是子文件夹的inode_id
 void WriteDir(const char *dir_name, int relative_dir_entry_id, int dir_block_id, int son_dir_id);
+//重命名$path的文件为AimedName path错误返回负值，AimedName已存在返回10
+int ReName(char path[], char AimedName[]);
 int WaitMessage();
 bool IsExit(int);
 int GetWorkDir();
