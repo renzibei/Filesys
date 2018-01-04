@@ -5,6 +5,7 @@ const char filename[12] = "Filesys.vfs";
 const int inode_size = 32, datablk_size = 4096, dir_size = 256;
 const int indbmp_size = 4096, blkbmp_size = 4096, inodes_size = inode_size * 4096;
 char inputbuffer[input_buffer_length];
+char inputcontent[input_buffer_length] = { 0 };
 
 workdir_pathnode *pathhead = NULL;
 workdir_pathnode *wkpath = NULL;
@@ -733,7 +734,6 @@ int WaitMessage()
     }
     strncpy(inputbuffer, input_str.c_str(), input_str.length());
     //cout << endl;
-    char inputcontent[input_buffer_length] = {0};
     int inputlen = (int) strlen(inputbuffer), echopos = -1;
     switch (inputbuffer[0]) {
         case 'c':
