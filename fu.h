@@ -5,8 +5,9 @@
 extern const char filename[12];
 extern const int inode_size,datablk_size, dir_size, indbmp_size, blkbmp_size, inodes_size;
 
-void BlockFullError();
-void InodeFullError();
+void BlockFullError();//block块已满
+void InodeFullError();//inode块已满
+void FileError(char path[]);//非文件错误
 int find_free_indbmp();
 int find_free_blkbmp();
 int cat(char path[]);
