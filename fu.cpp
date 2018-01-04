@@ -38,13 +38,14 @@ void write_fileblock_into_file(char str[],int block_id)//ÔÚblock_idÉÏÊéĞ´str£¬¾¯
 	long Position = DataBlkPos(block_id);
 	fseek(vfs, Position, SEEK_SET);
 	int lenstr = (int)strlen(str);
-	if (lenstr > 4096) {
+	if (lenstr > 4096 || lenstr == 0) {
 		lenstr = 4096;
 	}
     fwrite(str ,sizeof(char), lenstr, vfs);
 	char _zero[1] = { '\0' };
-	for(int i=0;i<datablk_size - lenstr;i++)
-		fwrite(_zero ,sizeof(char), 1, vfs);
+	for (int i = 0; i < datablk_size - lenstr; i++) {
+		fwrite(_zero, sizeof(char), 1, vfs);
+	}
 	fclose(vfs);
 	return;
 }
@@ -106,84 +107,98 @@ int find_position_dir_entry(int path_inode_id){//Î´¼ÓpathÅĞ¶Ï£¬¼´Ğè×ÔĞĞÅĞ¶Ïpath´
 
 int echo(char path[], char str[])//½«strÔÚĞ´ÈëpathÂ·¾¶µÄÎÄ¼ş£¬ĞèÇópathÒÔ'\0'½áÎ²£¬strËæÒâ
 {
-	return 0;
+	char * path_up = new char[strlen(path) + 1];
+	int i = DoEcho(path, str, path_up);
+	if (i == 0) {
+	}
+	else if (i == -1) {
+		DirError(path_up);
+	}
+	else if (i == -2) {
+		PathError(path_up);
+	}
+	else if (i == 1) {
+		FullError();
+	}
+	else if (i == 2) {
+		InodeFullError();
+	}
+	else if (i == 3) {
+		BlockFullError();
+	}
+	delete[] path_up;
+	return i;
 }
 
-int DoEcho(char path[], char str[])//echoÄÚºË
+int cut_path_and_path_up(char path[], char path_up[], char str_name[])//echo¸±º¯Êı£¬-1ÎÄ¼şÃû¹ı³¤£¬0³É¹¦£¬½«path²ğ·ÖÎªpath_upºÍstr_name
 {
 	int tmplen = (int)strlen(path);//Â·¾¶³¤¶È
-	char str_name[252] = {0};//ÎÄ¼şÃû
 	int UpDirPos = -1;//ÉÏ¼¶Ä¿Â¼Â·¾¶ÖÕÖ¹Î»ÖÃ£¬¼´'/'Î»ÖÃ
 	bool flag = 0;//ÎÄ¼şÎª±ê×¼¸ñÊ½"a/b/c"»ò·Ç±ê×¼¸ñÊ½"a"(Ïàµ±ÓÚ"./a")Ç°ÕßÎª1£¬ºóÕß0
-	for (int i = tmplen; i >= 0; i--){
-		if(path[i] == '/') {
+	for (int i = tmplen; i >= 0; i--) {
+		if (path[i] == '/') {
 			flag = 1;
 			UpDirPos = i;
 			break;
 		}
 	}
-
-	//»ñµÃÎÄ¼şÃû¡¢ÉÏ¼¶ÎÄ¼ş¼ĞÂ·¾¶
-	int lenstr = tmplen;//str³¤¶È
+	int lenname = tmplen;//str³¤¶È
 	if (flag) {
-		lenstr = tmplen - UpDirPos - 1;
+		lenname = tmplen - UpDirPos - 1;
 	}
-	if (lenstr > 251) {//ÎÄ¼şÃû¹ı³¤
-		NameLongError();
+	if (lenname > 251) {//ÎÄ¼şÃû¹ı³¤
 		return -2;
 	}
-	char * path_up = new char[tmplen + 2];//ÉÏÒ»¼¶Ä¿Â¼
 	if (flag) {
 		strncpy(path_up, path, UpDirPos);
 		path_up[UpDirPos] = '\0';
 		//cout << "path_up: " << path_up << endl;
 	}
 	else {
-		path_up[0] = '.';
-		path_up[1] = '\0';
+		path_up[0] = '\0';
 	}
-	strncpy(str_name, path + UpDirPos + 1, lenstr);
-	str_name[lenstr] = '\0';
+	strncpy(str_name, path + UpDirPos + 1, lenname);
+	str_name[lenname] = '\0';
 	//cout << "str_name: " << str_name << endl;
+}
 
+int DoEcho(char path[], char str[],char path_up[])//echoÄÚºË£¬Ä¿Â¼·µ»Ø-1£¬ÉÏ¼¶²»´æÔÚ-2£¬ÉÏ¼¶ÎªÎÄ¼ş-3£¬Ä¿Â¼¡¢inode¡¢blockÒÑÂú¶ÔÓ¦1¡¢2¡¢3
+{
+	int str_inode_id = GetPathInode(path);
 
-	int upstr_inode_id = GetPathInode(path_up);
-	if (upstr_inode_id<0){
-		PathError(path_up);
-		delete[] path_up;
+	//ÈôÎªÄ¿Â¼£¬·µ»Ø-1
+	if (str_inode_id > 0 && inodes[str_inode_id].i_mode == 0) {
 		return -1;
 	}
-	if (inodes[upstr_inode_id].i_mode == 1){
-		DirError(path_up);
-		delete[] path_up;
-		return -1;
-	}
-
-	int str_inode_id = FindPath(path, upstr_inode_id);//inode_id£¬²»´æÔÚÎª-1
-	if (str_inode_id<0){//²»´æÔÚÔò´´½¨»ù±¾ĞÅÏ¢
+	//Èô²»´æÔÚ£¬²éÕÒÉÏ¼¶Ä¿Â¼ÊÇ·ñ´æÔÚ
+	if (str_inode_id < 0) {
+		char str_name[252];
+		cut_path_and_path_up(path, path_up, str_name);
+		int upstr_inode_id = GetPathInode(path_up);
+		//ÉÏ¼¶²»´æÔÚ·µ»Ø-2
+		if (upstr_inode_id<0) {
+			return -2;
+		}
+		//ÉÏ¼¶ÎªÎÄ¼ş·µ»Ø-3
+		if (inodes[upstr_inode_id].i_mode == 1) {
+			return -3;
+		}
 		//Ñ°ÕÒ¿ÉÓÃÎ»ÖÃ
 		int str_position = find_free_dir_entry(upstr_inode_id, path_up);
-		if (str_position < 0){
-			FullError();
-			delete[] path_up;
-			return -1;
-		} 
+		if (str_position < 0) {
+			return 1;
+		}
 		str_inode_id = find_free_indbmp();
-		if (str_inode_id<0){
-			InodeFullError();
-			delete[] path_up;
-			return -1;
+		if (str_inode_id < 0) {
+			return 2;
 		}
 		int str_block_id = find_free_blkbmp();
-		if (str_block_id<0){
-			BlockFullError();
-			delete[] path_up;
-			return -1;
+		if (str_block_id < 0) {
+			return 3;
 		}//ÒÔÉÏ¶ÔÓ¦´ÅÅÌ¿Õ¼äÒÑÂúµÄÇé¿ö
-
-		//³õÊ¼»¯
+		 //³õÊ¼»¯
 		WriteDir(str_name, str_position, upstr_inode_id, str_inode_id);
-		inodes[str_inode_id] = _inode(str_inode_id, 1, sizeof(str), upstr_inode_id, str_block_id);
+		inodes[str_inode_id] = _inode(str_inode_id, 1, 0, upstr_inode_id, str_block_id);
 		//²»±ØÇå³ıinode/block£¬ÒòÎªËüÃÇ±¾À´¾ÍÊÇ¿ÕµÄ 
 		sbks.inode_bitmap[str_inode_id] = 1;
 		sbks.block_bitmap[str_block_id] = 1;
@@ -191,16 +206,18 @@ int DoEcho(char path[], char str[])//echoÄÚºË
 		UpdateBlkBmp(str_block_id);
 		UpdateInode(str_inode_id);//´´½¨»ù±¾ĞÅÏ¢
 	}
-
+	//ÏÖÔÚÕâ¸öÎÄ¼şÒ»¶¨´æÔÚÁË
 	char full_str[4096];
-	int i = 0;
-	for (;(str[i] != '\0') && i < 4096;i++){
-		full_str[i] = str[i];
+	int filesize = 0;
+	for (;(str[filesize] != '\0') && filesize < 4096; filesize++){
+		full_str[filesize] = str[filesize];
 	}
-	//cout << i << " i\n";
-	for (;i<4096;i++){
+	//cout << filesize << " filesize\n";
+	for (int i = filesize; i < 4096; i++){
 		full_str[i] = '\0';
 	}//À©Õ¹strµ½±ê×¼³¤¶È
+	inodes[str_inode_id].i_file_size = filesize;
+	UpdateInode(str_inode_id);//¸ü¸ÄinodeÖĞµÄfizesize
 	write_fileblock_into_file(full_str,inodes[str_inode_id].i_blocks[0]);//Ğ´Èëstr
 	delete[] path_up;
 	return 0;
@@ -247,7 +264,7 @@ int delete_file(char path[]) {//É¾³ıÄ³inode_idµÄÎÄ¼ş£¬-2²»´æÔÚ£¬-1ÎÄ¼ş¼Ğ£¬0³É¹¦
 
 int delete_file(int path_inode_id)//É¾³ıÄ³inode_idµÄÎÄ¼ş£¬-2²»´æÔÚ£¬-1ÎÄ¼ş¼Ğ£¬0³É¹¦
 {
-	if (path_inode_id<0) {
+	if (path_inode_id < 0) {
 		return -2;
 	}//Â·¾¶²»´æÔÚ
 	if (inodes[path_inode_id].i_mode == 0) {
