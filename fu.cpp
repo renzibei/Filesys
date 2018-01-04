@@ -160,6 +160,7 @@ int cut_path_and_path_up(char path[], char path_up[], char str_name[])//echo副函
 	strncpy(str_name, path + UpDirPos + 1, lenname);
 	str_name[lenname] = '\0';
 	//cout << "str_name: " << str_name << endl;
+    return 0;
 }
 
 int DoEcho(char path[], char str[],char path_up[])//echo内核，目录返回-1，上级不存在-2，上级为文件-3，目录、inode、block已满对应1、2、3
