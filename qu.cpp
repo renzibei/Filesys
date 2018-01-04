@@ -127,10 +127,11 @@ void NameLongError()
     cout << "The Name should be no longer than 251 chars!" << endl;
 }
 
+char fat_path[input_buffer_length] = {0};
 int MakeFolder(char path[])
 {
     int path_len = (int) strlen(path), divpos = -1, fat_inode = 0;
-    char fat_path[input_buffer_length] = {0}, dir_name[253] = {0};
+    dir_name[253] = {0};
     for(int i = path_len-1; i > -1; --i)
         if(path[i] == '/') {
             divpos = i;
