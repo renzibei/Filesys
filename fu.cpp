@@ -108,10 +108,8 @@ int find_position_dir_entry(int path_inode_id){//Î´¼ÓpathÅĞ¶Ï£¬¼´Ğè×ÔĞĞÅĞ¶Ïpath´
 int echo(char path[], char str[])//ĞèÇópathÒÔ'\0'½áÎ²£¬strËæÒâ
 {
 	int i = DoEcho(path, str);
-	if (i == 0) {
-	}
-	else if (i == -1) {
-		DirError(path);
+	if (i == -1) {
+		FileError(path);
 	}
 	else if (i == -2) {
 		PathError(path);
@@ -147,6 +145,9 @@ int cut_path_and_path_up(char path[], char str_name[])//echo¸±º¯Êı£¬-1ÎÄ¼şÃû¹ı³¤
 	if (lenname > 251) {//ÎÄ¼şÃû¹ı³¤
 		return -1;
 	}
+	strncpy(str_name, path + UpDirPos + 1, lenname);
+	str_name[lenname] = '\0';
+	//cout << "str_name: " << str_name << endl;
 	if (flag) {
 		path[UpDirPos] = '\0';
 		//cout << "path_up: " << path_up << endl;
@@ -154,10 +155,12 @@ int cut_path_and_path_up(char path[], char str_name[])//echo¸±º¯Êı£¬-1ÎÄ¼şÃû¹ı³¤
 	else {
 		path[0] = '\0';
 	}
+
 	strncpy(str_name, path + UpDirPos + 1, lenname);
 	str_name[lenname] = '\0';
     //cout << "str_name: " << str_name << endl;
     return 0;
+
 }
 
 int DoEcho(char path[], char str[])//echoÄÚºË£¬-kÂ·¾¶´íÎó£¬+k¿Õ¼ä´íÎó£¬»áÔÚÂ·¾¶ÎŞÎóÊ±path¸Ä³ÉÉÏ¼¶Ä¿Â¼path
