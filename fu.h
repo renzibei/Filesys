@@ -29,7 +29,7 @@ int rmdir(char path[]);//删除path路径的目录，-2不存在，-1文件，0�
 
 extern char path_up[input_buffer_length];//echo用，上级路径
 int echo(char path[], char str[]);//将str在写入path路径的文件，需求path以'\0'结尾，str随意
-int DoEcho(char path[], char str[]);//echo内核，-k路径错误，+k空间错误，会在路径无误时path改成上级目录path
+int DoEcho(char path[], char str[]);//echo内核，-k路径错误，+k空间错误，0成功
 int cut_path_and_path_up(char path[], char str_name[]);//echo副函数，-1文件名过长，0成功
 
 int delete_directory(int path_inode_id);//删除某inode_id的目录，-2不存在，-1文件，0成功

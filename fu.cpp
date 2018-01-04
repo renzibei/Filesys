@@ -112,7 +112,7 @@ int echo(char path[], char str[])//ĞèÇópathÒÔ'\0'½áÎ²£¬strËæÒâ
 		FileError(path);
 	}
 	else if (i == -2) {
-		PathError(path);
+		PathError(path_up);
 	}
 	else if (i == 1) {
 		FullError();
@@ -122,6 +122,9 @@ int echo(char path[], char str[])//ĞèÇópathÒÔ'\0'½áÎ²£¬strËæÒâ
 	}
 	else if (i == 3) {
 		BlockFullError();
+	}
+	else if (i == -4) {
+		NameLongError();
 	}
 	return i;
 }
@@ -160,7 +163,7 @@ int cut_path_and_path_up(char path[], char str_name[])//echo¸±º¯Êı£¬-1ÎÄ¼şÃû¹ı³¤
 	return 0;
 }
 
-int DoEcho(char path[], char str[])//echoÄÚºË£¬-kÂ·¾¶´íÎó£¬+k¿Õ¼ä´íÎó£¬»áÔÚÂ·¾¶ÎŞÎóÊ±path¸Ä³ÉÉÏ¼¶Ä¿Â¼path
+int DoEcho(char path[], char str[])//echoÄÚºË£¬-kÂ·¾¶´íÎó£¬+k¿Õ¼ä´íÎó£¬0³É¹¦
 {
 	int str_inode_id = GetPathInode(path);
 
@@ -171,7 +174,9 @@ int DoEcho(char path[], char str[])//echoÄÚºË£¬-kÂ·¾¶´íÎó£¬+k¿Õ¼ä´íÎó£¬»áÔÚÂ·¾¶Î
 	//Èô²»´æÔÚ£¬²éÕÒÉÏ¼¶Ä¿Â¼ÊÇ·ñ´æÔÚ
 	if (str_inode_id < 0) {
 		char str_name[252];
-		cut_path_and_path_up(path, str_name);
+		if (cut_path_and_path_up(path, str_name) == -1) {
+			return -4;
+		}
 		int upstr_inode_id = GetPathInode(path_up);
 		//ÉÏ¼¶²»´æÔÚ·µ»Ø-2
 		if (upstr_inode_id<0) {
