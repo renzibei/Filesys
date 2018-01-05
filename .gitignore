@@ -32,3 +32,5 @@
 #*.app
 ._filestruct.h
 ._*
+.qmake.stash
+*.pro.user*
