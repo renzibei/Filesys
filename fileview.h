@@ -16,7 +16,7 @@
 #include "textedit.h"
 #include "Filesys.h"
 
-
+int GetNewName(QWidget *parent, QString &the_new_file_name, int judge_type = 0, const QString &the_old_name = NULL);
 
 class DirList :public QListWidget
 {
@@ -24,12 +24,17 @@ class DirList :public QListWidget
 public:
     DirList(QWidget *parent = 0);
     ~DirList();
+public slots:
+    void slotEditFile(QString *the_file_name = NULL);
 protected slots:
     void slotNewDir();
+    void slotNewFile();
     void SentDirName();
-    void slotCreateFolder();
+   // void slotCreateFolder();
     void slotDelete();
-    void slotEditFile();
+    void slotReName();
+
+
 protected:
     void contextMenuEvent(QContextMenuEvent * event);
 
@@ -37,6 +42,7 @@ private:
     QLineEdit *NameEdit;
     QDialog *NewNameD;
     QListWidgetItem * toDeleteItem;
+
 };
 
 
@@ -52,6 +58,7 @@ protected slots:
     void slotShowDir(QListWidgetItem * item);
     void slotGoUpDIr();
     void slotGoTo();
+
 private:
 
 
@@ -61,6 +68,8 @@ private:
        QPushButton * UpFolBtn;
        QPushButton * GoToBtn;
 };
+
+
 
 extern FileView* vfs_gui;
 

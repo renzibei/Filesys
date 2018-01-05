@@ -20,7 +20,7 @@ void FileError(char path[]);//非文件错误
 
 int find_free_indbmp();
 int find_free_blkbmp();
-int find_free_dir_entry(int inode_id);
+int find_free_dir_entry(int inode_id); //满了返回-1
 int find_position_dir_entry(int path_inode_id);
 
 int cat(char path[]);//读取path路径的文件，-2不存在，-1目录，0成功

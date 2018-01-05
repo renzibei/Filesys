@@ -128,6 +128,8 @@ void NameLongError()
 }
 
 char fat_path[input_buffer_length] = {0};
+
+
 int MakeFolder(char path[])
 {
     int path_len = (int) strlen(path), divpos = -1, fat_inode = 0;

@@ -19,7 +19,7 @@ private:
     bool IsSaved;
 protected slots:
     void slotQuit();
-    void slotSave();
+    int slotSave();
     void slotChangeSaveStatus();
 };
 #endif // TEXTEDIT_H

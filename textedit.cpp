@@ -55,18 +55,29 @@ void EditTextWidget::slotQuit()
             this->close();
             break;
         case QMessageBox::Save:
-            slotSave();
-            this->close();
+            if(slotSave() == 0)
+                this->close();
             break;
         default:
             break;
         }
     }
+    else this->close();
 }
 
-void EditTextWidget::slotSave()
+int EditTextWidget::slotSave()
 {
     QByteArray temp_text_str = theTextEdit->toPlainText().toLatin1();
-    char *content_text_p = temp_text_str.data();
-    echo(file_name_str, content_text_p);
+    int return_value = 0;
+    if(temp_text_str.size() >= 4096) {
+        QMessageBox::warning(this, "", tr("文件内容不能超过4096字符"));
+        return_value = -1;
+    }
+    else {
+        char *content_text_p = temp_text_str.data();
+        echo(file_name_str, content_text_p);
+        IsSaved = 1;
+        return_value = 0;
+    }
+    return return_value;
 }
