@@ -4,13 +4,13 @@
 FileView::FileView(QWidget *parent)
     : QDialog(parent)
 {
-    this->setWindowIcon(QIcon(":/new/icon/pngsources/vfs_icon.svg"));
+    this->setWindowIcon(QIcon(":/new/icon/vfs_icon.svg"));
     InitDisk();
     setWindowTitle( tr( "Virtual File System" ) );
     WorkPathEdit = new QLineEdit(this);
     WorkPathEdit->setText( tr( "/" ) );
     GoToBtn = new QPushButton;
-    GoToBtn->setIcon(QIcon(":/new/icon/pngsources/right.svg"));
+    GoToBtn->setIcon(QIcon(":/new/icon/right.svg"));
     connect(GoToBtn, SIGNAL(clicked()), this, SLOT(slotGoTo()));
     QHBoxLayout * h_layout1 = new QHBoxLayout;
     h_layout1->addWidget(WorkPathEdit);
@@ -19,12 +19,12 @@ FileView::FileView(QWidget *parent)
     FileListWidget->setViewMode(QListView::IconMode);
     UpFolBtn = new QPushButton;
     //UpFolBtn->setFixedWidth(32);
-    UpFolBtn->setIcon(QIcon(":/new/icon/pngsources/up.svg"));
+    UpFolBtn->setIcon(QIcon(":/new/icon/up.svg"));
     connect(UpFolBtn, SIGNAL(clicked()), this, SLOT(slotGoUpDIr()));
     NewFolBtn = new QPushButton;
-    NewFolBtn->setIcon(QIcon(":/new/icon/pngsources/new_folder.svg"));
+    NewFolBtn->setIcon(QIcon(":/new/icon/new_folder.svg"));
     NewFileBtn = new QPushButton;
-    NewFileBtn->setIcon(QIcon(":/new/icon/pngsources/new_doc.svg"));
+    NewFileBtn->setIcon(QIcon(":/new/icon/new_doc.svg"));
     //NewFolBtn->setText(tr("新建文件夹"));
     //NewFolBtn->setFixedHeight(40);
     connect(NewFolBtn, SIGNAL(clicked()), FileListWidget, SLOT(slotNewDir()));
@@ -250,11 +250,11 @@ void FileView::UpdateFileList()
         if(strlen(dir_name) != 0) {
             QString fileName(dir_name);
             if (inodes[dir_entry_id].i_mode == 0) {
-                QListWidgetItem * pTmp = new QListWidgetItem( QIcon( ":/new/icon/pngsources/folder2.svg" ), fileName );
+                QListWidgetItem * pTmp = new QListWidgetItem( QIcon( ":/new/icon/folder2.svg" ), fileName );
                 FileListWidget->addItem( pTmp );
             }
             else {
-                QListWidgetItem * pTmp = new QListWidgetItem( QIcon( ":/new/icon/pngsources/file1.svg" ), fileName );
+                QListWidgetItem * pTmp = new QListWidgetItem( QIcon( ":/new/icon/file1.svg" ), fileName );
                 FileListWidget->addItem( pTmp );
             }
         }
