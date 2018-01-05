@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/new/icon">
-        <file>pngsources/filenew.png</file>
-        <file>pngsources/folder2.svg</file>
-        <file>pngsources/file1.svg</file>
-        <file>pngsources/up.svg</file>
-        <file>pngsources/right.svg</file>
-    </qresource>
-</RCC>
