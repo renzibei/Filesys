@@ -81,7 +81,7 @@ int find_free_blkbmp(){
 	return i;
 }
 
-int find_free_dir_entry(int inode_id, char path[]) {
+int find_free_dir_entry(int inode_id) {
 	if (inodes[inode_id].i_mode == 1){
 		return -2;
 	}
@@ -197,7 +197,7 @@ int DoEcho(char path[], char str[])//echo内核，-k路径错误，+k空间错误，0成功
 			return -4;
 		}
 		//寻找可用位置
-		int str_position = find_free_dir_entry(upstr_inode_id, path_up);
+		int str_position = find_free_dir_entry(upstr_inode_id);
 		if (str_position < 0) {
 			return 1;
 		}
