@@ -22,11 +22,16 @@ FileView::FileView(QWidget *parent)
     UpFolBtn->setIcon(QIcon(":/new/icon/pngsources/up.svg"));
     connect(UpFolBtn, SIGNAL(clicked()), this, SLOT(slotGoUpDIr()));
     NewFolBtn = new QPushButton;
-    NewFolBtn->setText(tr("新建文件夹"));
+    NewFolBtn->setIcon(QIcon(":/new/icon/pngsources/new_folder.svg"));
+    NewFileBtn = new QPushButton;
+    NewFileBtn->setIcon(QIcon(":/new/icon/pngsources/new_doc.svg"));
+    //NewFolBtn->setText(tr("新建文件夹"));
     //NewFolBtn->setFixedHeight(40);
     connect(NewFolBtn, SIGNAL(clicked()), FileListWidget, SLOT(slotNewDir()));
+    connect(NewFileBtn, SIGNAL(clicked()), FileListWidget, SLOT(slotNewFile()));
     QHBoxLayout * h_layout2 = new QHBoxLayout;
     h_layout2->addWidget(NewFolBtn);
+    h_layout2->addWidget(NewFileBtn);
     h_layout2->addWidget(UpFolBtn);
     QVBoxLayout * v_layout = new QVBoxLayout(this);
     v_layout->addLayout(h_layout1);
@@ -235,7 +240,7 @@ void FileView::UpdateFileList()
     FILE *vfs = fopen(filename, "rb");
     char dir_name[253] = {0};
     int dir_entry_id = -1;
-    for (int i = 0; i < 16; ++i)
+    for (int i = 2; i < 16; ++i)
     {
         fseek(vfs, DataBlkPos(inodes[wkpath->dir_inode].i_blocks[0]), SEEK_SET);
         fseek(vfs, DirsPos(i), SEEK_CUR);

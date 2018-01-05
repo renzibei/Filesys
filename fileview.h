@@ -12,6 +12,7 @@
 #include <QTextEdit>
 #include <QInputDialog>
 #include <QLayout>
+#include <QTranslator>
 
 #include "textedit.h"
 #include "Filesys.h"
@@ -65,6 +66,7 @@ private:
        QLineEdit * WorkPathEdit;
        DirList * FileListWidget;
        QPushButton * NewFolBtn;
+       QPushButton * NewFileBtn;
        QPushButton * UpFolBtn;
        QPushButton * GoToBtn;
 };
