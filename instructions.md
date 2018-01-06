@@ -248,7 +248,7 @@ $path格式： &quot;father\_path/file\_name&quot; 或 &quot;file\_name&quot;。
 
 ### 4.1界面
 界面是简洁的模拟文件管理系统的图形界面，界面风格基于操作系统
-![macOS下的界面](https://raw.githubusercontent.com/FanQu/Filesys/master/resources/instructions/ins1.png)
+<img width="350" height="350" src="https://raw.githubusercontent.com/FanQu/Filesys/master/resources/instructions/ins1.png"/>
 
 
 ## 五、小组分工
