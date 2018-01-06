@@ -181,6 +181,14 @@ int MakeFolder(char path[])
 
 int MakeDir(char path[])
 {
+    if(find_free_indbmp() == -1) {
+        InodeFullError();
+        return -5;
+    }
+    else if(find_free_blkbmp() == -1) {
+        BlockFullError();
+        return -6;
+    }
     int judgestatus = MakeFolder(path);
     if(judgestatus == -1)
         PathError(path);
@@ -423,56 +431,7 @@ int GetFatDir()
     return inodes[wkpath->dir_inode].fat_id;
 }
 
-/*
-int SwitchWorkDir(int status)
-{
-    switch (status) {
-        case 0:
-        {
-            FreeDirPath(wkpath);
-            wkpath = tempwd;
-            pathhead = temphead;
-            pathtail = temptail;
-        }
-            break;
-        case 1:
-        {
-            wkpath->nextdir = temphead->nextdir;
-            temphead->nextdir->prevdir = wkpath;
-            delete pathtail;
-            delete temphead;
-            wkpath = tempwd;
-            pathtail = temptail;
-        }
-            break;
-        case 2:
-        {
-            if(wkpath->prevdir) {
-				wkpath->prevdir->nextdir = temphead->nextdir;
-                temphead->nextdir->prevdir = wkpath->prevdir;
-            }
-            else {
-                pathhead->nextdir = temphead->nextdir;
-                temphead->nextdir->prevdir = pathhead;
-            }
-            if(wkpath != pathhead)
-				delete wkpath;
-            delete pathtail;
-            if(temphead->dir_inode != 0)
-                wkpath = tempwd;
-            else wkpath = pathhead;
-            delete temphead;
-            pathtail = temptail;
-        }
-            break;
-        default:
-            break;
-    }
-    tempwd = NULL;
-    temptail = NULL;
-    temphead =NULL;
-    return 0;
-}*/
+
 int SwitchWorkDir(int switchmode = 0)
 {
     switch (switchmode) {
@@ -639,14 +598,22 @@ void NoExistedErr(char path[])
 
 int mv(char path[], char AimedName[])
 {
+    if(strlen(AimedName) > 251) {
+        NameLongError();
+        return -1;
+    }
+    else if(strlen(AimedName) == 0) {
+        EmptyErr();
+        return -2;
+    }
     int tempstatus = ReName(path, AimedName);
     if(tempstatus < 0) {
         NoExistedErr(path);
-        return -11;
+        return -3;
     }
-    else if(tempstatus == 10) {
+    else if(tempstatus == -3) {
         ExistedError(AimedName);
-        return 10;
+        return -4;
     }
     return 0;
     
@@ -738,9 +705,9 @@ bool IsCmdErr(const char* cmd, char path[], int judgemode = 1)
     return 1;
 }
 
-void EmptyErr(char path[])
+void EmptyErr()
 {
-    cout << path << " The name cannot be empty!" << endl;
+    cout << "The name cannot be empty!" << endl;
 }
 
 int WaitMessage()
@@ -813,7 +780,7 @@ int WaitMessage()
                     return 2;
                 }
                 else if(!(inputlen > 6 && strncmp(inputbuffer, "mkdir ", 6) == 0)) {
-                    EmptyErr(inputbuffer + 6);
+                    EmptyErr();
                     return 1;
                 }
                 return MakeDir(inputbuffer + 6);
@@ -827,7 +794,7 @@ int WaitMessage()
                     memset(inputcontent, 0, sizeof(inputcontent));
                     int SpacePos = InitMv(inputbuffer + 3, inputcontent);
                     if(SpacePos == -1) {
-                        PathError(inputbuffer);
+                        EmptyErr();
                         return 1;
                     }
                     else {

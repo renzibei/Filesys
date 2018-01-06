@@ -49,7 +49,7 @@ void DirError(char path[]);
 //文件不存在报错
 void NoExistedErr(char path[]);
 
-void EmptyErr(char path[]);
+void EmptyErr();
 
 int GetSelfName(int inode_id, char selfname[]);
 int UpdateInode(int x);
