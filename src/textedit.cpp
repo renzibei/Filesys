@@ -4,6 +4,7 @@ EditTextWidget::EditTextWidget(QWidget *parent, char _file_name[])
     :QDialog(parent)
 {
     IsSaved = 1;
+    this->setWindowIcon(QIcon(":/new/icon/file1.svg"));
     QuitBtn = new QPushButton;
     SaveBtn = new QPushButton;
     UndoBtn = new QPushButton;
