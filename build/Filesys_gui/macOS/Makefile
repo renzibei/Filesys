@@ -223,7 +223,6 @@ DIST          = /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/spec_pre.pr
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/qt_config.prf \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/macx-clang/qmake.conf \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/spec_post.prf \
-		../../../.qmake.stash \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/exclusive_builds.prf \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/mac/sdk.prf \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/toolchain.prf \
@@ -434,7 +433,6 @@ Makefile: Filesys_gui.pro /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/macx-clang
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/qt_config.prf \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/macx-clang/qmake.conf \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/spec_post.prf \
-		../../../.qmake.stash \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/exclusive_builds.prf \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/mac/sdk.prf \
 		/Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/toolchain.prf \
@@ -624,7 +622,6 @@ Makefile: Filesys_gui.pro /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/macx-clang
 /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/qt_config.prf:
 /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/macx-clang/qmake.conf:
 /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/spec_post.prf:
-../../../.qmake.stash:
 /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/exclusive_builds.prf:
 /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/mac/sdk.prf:
 /Users/fanqu/Qt5.9.1/5.9.1/clang_64/mkspecs/features/toolchain.prf:
