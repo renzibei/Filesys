@@ -9,7 +9,8 @@
 源码在/Filesys/src/目录下
 
 ## 图片概览
-<img width="350" height="350" src="https://raw.githubusercontent.com/FanQu/Filesys/master/resources/instructions/ins1.png"/>
+![文件浏览](https://raw.githubusercontent.com/FanQu/Filesys/master/resources/instructions/ins1.png)
 
-<img width="350" height="350" src="https://raw.githubusercontent.com/FanQu/Filesys/master/resources/instructions/edit.png"/>
+![文本编辑](https://raw.githubusercontent.com/FanQu/Filesys/master/resources/instructions/edit.png)
+
 
