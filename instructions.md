@@ -43,9 +43,9 @@
 
 指这样使用时合法的，大多数不合法的操作（删除当前目录或包含当前目录的目录除外）均会返回提示且被禁止操作，注意，虽然程序未限制，但 **禁止删除当前目录或包含当前目录的目录** 。
 
-## 三、命令介绍
+## 三、命令介绍(命令行界面）
 
-### 3.0、Gui操作//mark
+
 
 ### 3.1、路径操作
 
@@ -94,6 +94,8 @@
 #### 3.2.2重命名目录或文件
 
 命令：mv+空格+$path + 空格 +$new_name
+            示例1： mv a.cpp b.cpp
+            示例2:    mv /home/a.cpp b.cpp
 
 内容：将path路径上的文件或文件夹重命名为$new_name
 
@@ -134,6 +136,10 @@ $path格式： &quot;$father\_path/$dir\_name&quot; 或 &quot;$dir\_name&quot;�
 4、$path尚未存在，否则会提示&quot;$path is already existed.&quot;；
 
 5、$father\_path未满，否则会提示&quot;The Directory is full!&quot;。
+
+6、inode（索引）块不能全部被占用，否则会提示&quot;All inodes are used&quot;；
+
+7、block（数据）块不能全部被占用，否则会提示&quot;All blocks are used&quot;。
 
 #### 3.3.2删除文件夹
 
@@ -237,6 +243,14 @@ $path格式： &quot;father\_path/file\_name&quot; 或 &quot;file\_name&quot;。
 
 使用说明：程序中不储存block（数据）信息，&quot;refresh 0&quot;只更新inode（索引）和superblock（超级块）信息。正常情况下程序与文件的内容是同步变化的，当文件被替换时会不同步，需要refresh，注意，若用不正常的同名文件替换，很有可能导致程序崩溃。
 
-## 三、小组分工
+
+## 四、图形界面介绍
+
+### 4.1界面
+界面是简洁的模拟文件管理系统的图形界面，界面风格基于操作系统
+![macOS下的界面](https://raw.githubusercontent.com/FanQu/Filesys/master/resources/instructions/ins1.png)
+
+
+## 五、小组分工
 
 傅舟涛主要负责磁盘格式化和磁盘刷新的接口、rmdir、echo、cat、rm、磁盘格式化、以及说明文件的大部分内容，瞿凡主要负责初始化、前端（Gui）、大部分接口、pwd、cd、mkdir、ls、重命名、以及说明文件的重命名和Gui部分。fu.cpp、fu.h的内容来自于傅舟涛，其余主要来自于瞿凡。
