@@ -28,11 +28,15 @@ long DirsPos(int x); //返回第x子文件目录的相对位置
 void WriteDir(const char *dir_name, int relative_dir_entry_id, int dir_block_id, int son_dir_id);
 //重命名$path的文件为AimedName path错误返回负值，AimedName已存在返回10
 int ReName(char path[], char AimedName[]);
+//命令行的前端函数
 int WaitMessage();
 bool IsExit(int);
 int GetWorkDir();
+//找到路径为$path的文件或文件夹,type_judge == 1时同时切换目录
 int GetPathInode(char path[], int type_judge = 0);
+//供GetPathInode调用的递归函数
 int FindPath(char path[], int inode_id,int type_find = 0);
+//列出工作目录下的内容
 int ListDirs(char path[]);
 //路径错误报错
 void PathError(char path[]);
@@ -48,15 +52,16 @@ void CmdError(char cmds[]);
 void DirError(char path[]);
 //文件不存在报错
 void NoExistedErr(char path[]);
-
+//输入为空报错
 void EmptyErr();
-
+//获得自身文件名
 int GetSelfName(int inode_id, char selfname[]);
 int UpdateInode(int x);
 int UpdateIndBmp(int inode_bmp_id);
 int UpdateBlkBmp(int block_bmp_id);
 void debug();
 int GetAboPath(char *path);
+//切换目录
 int ChangeDir(char *path);
 
 //成功创建返回0， 路径错误返回-1， 已存在返回-2, 子文件夹满了返回-3
